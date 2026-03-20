@@ -1,0 +1,532 @@
+{
+      "associations":[
+         {
+            "name":"sports_club",
+            "description":"Organization dedicated to promoting and managing sports or athletic activities."
+         },
+         {
+            "name":"association_general",
+            "description":"General non-profit or civic association not classified under a specific purpose."
+         },
+         {
+            "name":"charity",
+            "description":"Non-profit organization focused on humanitarian or social aid activities."
+         },
+         {
+            "name":"breeders_association",
+            "description":"Organization formed by animal breeders for regulation, promotion, or coordination of breeding activities."
+         },
+         {
+            "name":"voluntary_firemen",
+            "description":"Volunteer fire brigade association providing firefighting and emergency response services."
+         }
+      ],
+      "automotive":[
+         {
+            "name":"car_maintenance",
+            "description":"Business offering car repairs, servicing, and mechanical maintenance."
+         },
+         {
+            "name":"petrol_station",
+            "description":"Facility selling fuel and related automotive products."
+         },
+         {
+            "name":"automotive_general",
+            "description":"General automotive business not classified elsewhere, related to motor vehicles."
+         },
+         {
+            "name":"car_rental",
+            "description":"Company providing vehicles for short-term or long-term rental."
+         },
+         {
+            "name":"car_parts_seller",
+            "description":"Retailer specializing in car parts, components, and accessories."
+         },
+         {
+            "name":"car_dealer",
+            "description":"Authorized seller or distributor of new or used vehicles."
+         }
+      ],
+      "banking_and_financial":[
+         {
+            "name":"atm",
+            "description":"Automated teller machine location providing cash withdrawal and related banking functions."
+         },
+         {
+            "name":"building_savings_bank",
+            "description":"Specialized financial institution focused on housing and savings products."
+         },
+         {
+            "name":"moneta",
+            "description":"Specific financial entity — Moneta Money Bank or its affiliates."
+         },
+         {
+            "name":"nonbanking_lender",
+            "description":"Institution offering loans or credit without a full banking license."
+         },
+         {
+            "name":"savings_and_investment",
+            "description":"Entity providing savings accounts, investment funds, or securities services."
+         },
+         {
+            "name":"financial_nonbanking_general",
+            "description":"General financial service provider not holding a banking license and not otherwise classified."
+         },
+         {
+            "name":"bank_general",
+            "description":"Full-service banking institution offering deposit, credit, and payment services."
+         },
+         {
+            "name":"claim_collector",
+            "description":"Agency engaged in debt collection or recovery of outstanding payments."
+         },
+         {
+            "name":"leasing",
+            "description":"Company providing financial leasing or hire purchase arrangements for assets."
+         },
+         {
+            "name":"moneta_auto",
+            "description":"Subsidiary or service of Moneta Money Bank focused on vehicle financing."
+         },
+         {
+            "name":"subprime_lender",
+            "description":"Lender providing credit to higher-risk borrowers, typically at higher interest rates."
+         }
+      ],
+      "culture":[
+         {
+            "name":"cinema",
+            "description":"Business or venue showing films to the public."
+         },
+         {
+            "name":"music_production",
+            "description":"Entity engaged in producing, recording, or publishing music."
+         },
+         {
+            "name":"theatre",
+            "description":"Institution or company producing or presenting live stage performances."
+         },
+         {
+            "name":"culture_general",
+            "description":"General cultural institution or organization not classified elsewhere, such as museums or cultural centers."
+         }
+      ],
+      "digital_and_media":[
+         {
+            "name":"telecommunications_company",
+            "description":"Provider of telephone, internet, or data transmission services."
+         },
+         {
+            "name":"computer_games",
+            "description":"Company engaged in developing, publishing, or selling video or computer games."
+         },
+         {
+            "name":"digital_general",
+            "description":"General digital service provider not otherwise classified, e.g., online platforms or app developers."
+         },
+         {
+            "name":"payment_portal",
+            "description":"Online payment gateway or processor facilitating digital transactions."
+         },
+         {
+            "name":"radio",
+            "description":"Broadcast service or company transmitting audio content via radio frequencies or online streaming."
+         },
+         {
+            "name":"books_and_newspapers",
+            "description":"Publisher focusing on books, newspapers, or periodicals, not a retailer."
+         },
+         {
+            "name":"television",
+            "description":"Broadcaster or production company providing visual media via television networks."
+         },
+         {
+            "name":"music_streaming",
+            "description":"Online service distributing or streaming music content digitally."
+         },
+         {
+            "name":"video_streaming",
+            "description":"Platform providing streaming or on-demand video content."
+         },
+         {
+            "name":"software",
+            "description":"Developer or distributor of computer software products or services."
+         },
+         {
+            "name":"library",
+            "description":"Public or institutional library providing access to books, media, and research materials."
+         }
+      ],
+      "education":[
+         {
+            "name":"university",
+            "description":"Higher-education institution providing undergraduate and postgraduate degree programs."
+         },
+         {
+            "name":"secondary_school",
+            "description":"Educational institution providing secondary or high-school level education."
+         },
+         {
+            "name":"primary_school",
+            "description":"Institution offering elementary-level education for children."
+         },
+         {
+            "name":"preschool",
+            "description":"Preschool facility for early childhood education before primary school."
+         },
+         {
+            "name":"driving_school",
+            "description":"Institution providing driver training and licensing preparation."
+         },
+         {
+            "name":"education_general",
+            "description":"Educational entity not otherwise classified, including tutoring centers or training institutes."
+         },
+         {
+            "name":"grammar_school",
+            "description":"Selective academic secondary school emphasizing traditional subjects and academic excellence."
+         }
+      ],
+      "energy":[
+         {
+            "name":"water",
+            "description":"Utility company supplying water or managing water infrastructure."
+         },
+         {
+            "name":"gas",
+            "description":"Utility company distributing natural gas or related fuel services."
+         },
+         {
+            "name":"energy_general",
+            "description":"General energy or utility provider not otherwise classified, e.g., electricity supply."
+         }
+      ],
+      "gambling":[
+         {
+            "name":"casino",
+            "description":"Venue or operator offering games of chance such as slots, cards, or roulette."
+         },
+         {
+            "name":"gambling_general",
+            "description":"Other gambling-related entities not classified elsewhere, e.g., betting platforms."
+         }
+      ],
+      "government":[
+         {
+            "name":"court",
+            "description":"Judicial institution administering justice and resolving legal disputes."
+         },
+         {
+            "name":"tax_office",
+            "description":"Government authority responsible for tax collection and fiscal administration."
+         },
+         {
+            "name":"municipality",
+            "description":"Local government office managing public administration at city or town level."
+         },
+         {
+            "name":"social_welfare_office",
+            "description":"Government office administering welfare benefits."
+         },
+         {
+            "name":"work_office",
+            "description":"Public employment office providing job placement and labor-market services."
+         },
+         {
+            "name":"government_general",
+            "description":"Other governmental bodies not classified elsewhere, such as ministries or agencies."
+         },
+         {
+            "name":"cadastral_office",
+            "description":"Authority responsible for land registry, property ownership, and mapping records."
+         },
+         {
+            "name":"customs_office",
+            "description":"Agency handling import/export control and customs duties."
+         },
+         {
+            "name":"prison",
+            "description":"State institution for detention and rehabilitation of convicted individuals."
+         }
+      ],
+      "hospitality":[
+         {
+            "name":"fast_food",
+            "description":"Restaurant or outlet providing quick-service meals with limited table service."
+         },
+         {
+            "name":"cafe",
+            "description":"Establishment serving coffee, light meals, or refreshments, typically with casual seating."
+         },
+         {
+            "name":"hotel",
+            "description":"Business providing temporary accommodation and lodging services to travelers."
+         },
+         {
+            "name":"gastronomy_general",
+            "description":"General food service provider not otherwise classified, covering varied dining formats."
+         },
+         {
+            "name":"bar",
+            "description":"Establishment primarily serving alcoholic beverages for on-site consumption."
+         },
+         {
+            "name":"hospitality_general",
+            "description":"General hospitality provider not fitting other categories, including mixed-service venues."
+         },
+         {
+            "name":"school_cafeteria",
+            "description":"Institutional canteen providing meals for students or educational staff."
+         },
+         {
+            "name":"travel_accommodation",
+            "description":"Provider of short-term lodging or travel-related accommodation, such as guesthouses or motels."
+         }
+      ],
+      "housing":[
+         {
+            "name":"rent",
+            "description":"Entity receiving payments for residential or commercial property rentals."
+         },
+         {
+            "name":"dormitory",
+            "description":"Institution providing shared accommodation for students or workers."
+         },
+         {
+            "name":"housing_owners_association",
+            "description":"Organization managing collective ownership and maintenance of residential buildings."
+         },
+         {
+            "name":"housing_cooperative",
+            "description":"Residential cooperative where tenants hold ownership shares in the housing entity."
+         },
+         {
+            "name":"housing_general",
+            "description":"Other housing-related organizations or associations not classified elsewhere."
+         }
+      ],
+      "industry":[
+         {
+            "name":"industry_construction",
+            "description":"Company involved in construction, renovation, or civil engineering projects."
+         },
+         {
+            "name":"industry_general",
+            "description":"Industrial enterprise not classified in a specific sector, such as mixed or heavy industry."
+         },
+         {
+            "name":"industry_agriculture",
+            "description":"Company engaged in large-scale agricultural or agribusiness production and processing."
+         }
+      ],
+      "insurance_company":[
+         {
+            "name":"insurance_company_health",
+            "description":"Insurance provider offering health, medical, or life-related coverage."
+         },
+         {
+            "name":"insurance_company_general",
+            "description":"General insurance company covering non-life sectors such as property, travel, or liability."
+         },
+         {
+            "name":"insurance_company_pension",
+            "description":"Institution managing long-term pension or retirement-related insurance products."
+         }
+      ],
+      "legal":[
+         {
+            "name":"distrainor",
+            "description":"Entity authorized to enforce debt collection through distraint or property seizure."
+         },
+         {
+            "name":"lawyer",
+            "description":"Licensed legal professional providing representation or consultation in legal matters."
+         },
+         {
+            "name":"legal_general",
+            "description":"General legal service provider or institution not classified elsewhere."
+         },
+         {
+            "name":"escrow",
+            "description":"Financial intermediary holding funds or assets in escrow for contractual transactions."
+         }
+      ],
+      "medicine":[
+         {
+            "name":"hospital",
+            "description":"Medical institution providing inpatient and outpatient healthcare services."
+         },
+         {
+            "name":"pharmacology",
+            "description":"Pharmacy or entity engaged in the distribution or preparation of pharmaceuticals."
+         },
+         {
+            "name":"medicine_general",
+            "description":"General medical service provider or healthcare entity not classified elsewhere."
+         },
+         {
+            "name":"veterinary_clinic",
+            "description":"Clinic or hospital providing medical care and treatment for animals."
+         },
+         {
+            "name":"social_services",
+            "description":"Organization providing care, rehabilitation, or support services for vulnerable groups. Not a government office."
+         }
+      ],
+      "natural_person":[
+         {
+            "name":"natural_person_general",
+            "description":"Individual person not acting in a business or institutional capacity."
+         },
+         {
+            "name":"savings",
+            "description":"Private individual account or fund used for saving or accumulating personal finances."
+         }
+      ],
+      "post_and_parcel":[
+         {
+            "name":"post_office",
+            "description":"National or regional postal service providing mail handling and delivery operations."
+         },
+         {
+            "name":"parcel_service",
+            "description":"Commercial carrier specializing in parcel and package transport."
+         },
+         {
+            "name":"logistics",
+            "description":"Company providing large-scale transportation, warehousing, or supply-chain logistics services."
+         }
+      ],
+      "real_estate":[
+         {
+            "name":"real_estate_agency",
+            "description":"Company facilitating the sale, purchase, or rental of real estate properties."
+         },
+         {
+            "name":"real_estate_developer",
+            "description":"Entity engaged in property development, construction, and commercialization of real estate projects."
+         }
+      ],
+      "retail":[
+         {
+            "name":"retail_sport",
+            "description":"Retailer specializing in sporting goods, fitness equipment, or athletic apparel."
+         },
+         {
+            "name":"retail_furniture",
+            "description":"Retail store selling home or office furniture and related accessories."
+         },
+         {
+            "name":"retail_electronics",
+            "description":"Retailer focused on consumer electronics, gadgets, and personal devices."
+         },
+         {
+            "name":"retail_hobby",
+            "description":"DIY shop, home improvement chain, retail store providing tools, hardware supplies for DIY and maintenance."
+         },
+         {
+            "name":"retail_pets",
+            "description":"Retailer of pet supplies, food, and related accessories for domestic animals."
+         },
+         {
+            "name":"retail_toys",
+            "description":"Store selling toys, games, and children's entertainment products."
+         },
+         {
+            "name":"retail_tobacco_and_smoking",
+            "description":"Retail outlet selling tobacco products, smoking accessories, or vaping items."
+         },
+         {
+            "name":"retail_clothes",
+            "description":"Retailer specializing in clothing, fashion accessories, and footwear."
+         },
+         {
+            "name":"retail_groceries",
+            "description":"Supermarket or grocery store selling food and everyday household items."
+         },
+         {
+            "name":"retail_liquor",
+            "description":"Store licensed to sell alcoholic beverages for off-premise consumption."
+         },
+         {
+            "name":"retail_cosmetics",
+            "description":"Retailer offering beauty, skincare, and cosmetic products."
+         },
+         {
+            "name":"retail_books",
+            "description":"Bookstore or retailer focusing on printed or digital reading materials. Not a media or publishing house."
+         },
+         {
+            "name":"retail_general",
+            "description":"Retail business not classified in another specific subcategory, e.g., department stores."
+         },
+         {
+            "name":"coupon_portal",
+            "description":"Website or platform distributing discount coupons or promotional deals for retail purchases."
+         },
+         {
+            "name":"drug_store_general",
+            "description":"Retailer selling personal care items, non-prescription medicines, and health-related products."
+         }
+      ],
+      "sensitive":[
+         {
+            "name":"sensitive_general",
+            "description":"Entity related to sensitive or restricted categories such as political, religious, or adult organizations."
+         }
+      ],
+      "services":[
+            {
+            "name":"food_delivery",
+            "description":"Company providing prepared meal delivery from restaurants or food vendors."
+         },
+         {
+            "name":"taxi",
+            "description":"Company or driver offering taxi or private car transport services."
+         },
+         {
+            "name":"travel_agency",
+            "description":"Business organizing travel, tours, and accommodation services for clients."
+         },
+         {
+            "name":"accounting",
+            "description":"Professional firm or individual providing bookkeeping, audit, and financial reporting services."
+         },
+         {
+            "name":"home_maintenance",
+            "description":"Service provider offering repairs, cleaning, or home improvement solutions."
+         },
+         {
+            "name":"marketing",
+            "description":"Agency or consultant offering marketing, promotion, and advertising services."
+         },
+         {
+            "name":"security_agency",
+            "description":"Company providing physical or electronic security and surveillance services."
+         },
+         {
+            "name":"services_general",
+            "description":"General service provider not categorized elsewhere, covering mixed or auxiliary services."
+         },
+         {
+            "name":"personal_transport",
+            "description":"Individual or business providing private transport services distinct from taxi companies."
+         },
+         {
+            "name":"burial_service",
+            "description":"Company offering funeral, cremation, or burial-related services."
+         }
+      ],
+      "self":[
+         {
+            "name":"self_general",
+            "description":"Category used for identifying self-related or internal transactions of the account holder."
+         }
+      ],
+      "unclassified":[
+         {
+            "name":"unclassified_general",
+            "description":"Entity that cannot be categorized under any existing defined category due to lack of identifiable characteristics."
+         }
+      ]
+   }
