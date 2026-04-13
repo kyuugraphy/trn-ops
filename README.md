@@ -40,6 +40,24 @@ pip install -r requirements.txt
 streamlit run app.py
 ```
 
+## Databricks Delta mode
+
+The app automatically uses Databricks SQL when these settings are present
+(environment variables or `.streamlit/secrets.toml`):
+
+- `DATABRICKS_HOST`
+- `DATABRICKS_TOKEN`
+- `DATABRICKS_HTTP_PATH`
+- Optional: `DATABRICKS_CATALOG` (default `trn_catalog`)
+- Optional: `DATABRICKS_SCHEMA` (default `trn_schema`)
+
+Tables used in DB mode:
+
+- `MANUAL_ACC_DATA_CHANGES`
+- `ACC_DATA_TAB_PIM`
+- `TRN_CLASSIFIED_12M`
+- `TRN_VALIDATION`
+
 NOTE - What to pay attention to
 1) Streamlit's re-run model — every interaction re-runs the entire script. This causes "disappearing data" bugs that are very confusing at first. This app has heavy form ↔ dataframe state sync, which is the hardest pattern in Streamlit.
 
