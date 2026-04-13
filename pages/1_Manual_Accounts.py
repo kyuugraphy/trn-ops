@@ -308,7 +308,7 @@ if True:
                 
                 if w_uni_pt_key <= 0:
                     errors.append("UNI_PT_KEY must be a positive integer")
-
+            """
                 if errors:
                     st.session_state["form_errors"] = errors
                 else:
@@ -356,6 +356,7 @@ if True:
                             st.session_state.acc_table["selection"]["rows"] = []
                         st.session_state["last_sel_idx"] = None
                         _clear_form()
+            """
 
             b1, b2 = st.columns(2)
             with b1:

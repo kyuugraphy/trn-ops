@@ -4,7 +4,7 @@ from utils.styles import inject_custom_css
 
 inject_custom_css()
 
-st.title("⚙️ TrnClassification Support")
+st.title("TrnClassification Support")
 st.markdown("""
 Welcome to the Transaction Classification Support Tool.
 
