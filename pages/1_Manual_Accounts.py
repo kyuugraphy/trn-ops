@@ -62,6 +62,146 @@ def _clear_form():
     st.session_state["w_purpose_subcat"] = "unclassified_general"
     st.session_state["w_purpose_validity"] = 99
 
+
+def handle_clear_btn():
+    # Force deselection of table to clear state cleanly
+    if "acc_table" in st.session_state and "selection" in st.session_state.acc_table:
+        st.session_state.acc_table["selection"]["rows"] = []
+    st.session_state["last_sel_idx"] = None
+    _clear_form()
+
+
+def handle_save_btn(current_sel_idx, current_df, ico_enabled, rc_enabled):
+    errors = []
+    v_iban, m_iban = validate_iban(st.session_state.w_iban)
+    if not v_iban: errors.append(f"IBAN: {m_iban}")
+    if ico_enabled:
+        v_ico, m_ico = validate_ico(st.session_state.w_ico)
+        if not v_ico: errors.append(f"ICO: {m_ico}")
+    if rc_enabled:
+        v_rc, m_rc = validate_rc(st.session_state.w_rc)
+        if not v_rc: errors.append(f"RC: {m_rc}")
+    if st.session_state.w_uni_pt_key <= 0:
+        errors.append("UNI_PT_KEY must be a positive integer")
+
+    if errors:
+        st.session_state["form_errors"] = errors
+    else:
+        st.session_state["form_errors"] = []
+        is_party_unc = st.session_state.w_party_subcat == "unclassified_general"
+        is_purp_unc = st.session_state.w_purpose_subcat == "unclassified_general"
+        party_cat = get_cat_for_subcat(st.session_state.w_party_subcat)
+        purp_cat = get_cat_for_subcat(st.session_state.w_purpose_subcat)
+        
+        new_row = {
+            "IBAN": st.session_state.w_iban.strip().upper(),
+            "UNI_PT_KEY": int(st.session_state.w_uni_pt_key),
+            "PT_TP_ID": st.session_state.w_pt_tp_id,
+            "ICO_NUM": st.session_state.w_ico.strip() if ico_enabled else "",
+            "RC_NUM": st.session_state.w_rc.strip() if rc_enabled else "",
+            "PARTY_SUBCAT": st.session_state.w_party_subcat,
+            "PARTY_CAT": party_cat,
+            "PARTY_SUBCAT_VALIDITY": 99 if is_party_unc else int(st.session_state.w_party_validity),
+            "PURPOSE_SUBCAT": st.session_state.w_purpose_subcat,
+            "PURPOSE_CAT": purp_cat,
+            "PURPOSE_SUBCAT_VALIDITY": 99 if is_purp_unc else int(st.session_state.w_purpose_validity),
+            "CREATED_BY": "user",
+            "CREATED_AT": datetime.now(),
+            "UPDATED_AT": datetime.now(),
+        }
+
+        if current_sel_idx is not None and current_sel_idx in current_df.index:
+            for col, val in new_row.items():
+                current_df.at[current_sel_idx, col] = val
+            current_df.at[current_sel_idx, "UPDATED_AT"] = datetime.now()
+            st.session_state["manual_acc_data"] = current_df
+            st.session_state["form_success"] = "Record updated successfully!"
+        else:
+            new_df = pd.DataFrame([new_row])
+            st.session_state["manual_acc_data"] = pd.concat([current_df, new_df], ignore_index=True)
+            st.session_state["form_success"] = "New record created successfully!"
+            
+            if "acc_table" in st.session_state and "selection" in st.session_state.acc_table:
+                st.session_state.acc_table["selection"]["rows"] = []
+            st.session_state["last_sel_idx"] = None
+            _clear_form()
+
+
+def handle_clear_btn():
+    if "acc_table" in st.session_state and "selection" in st.session_state.acc_table:
+        st.session_state.acc_table["selection"]["rows"] = []
+    st.session_state["last_sel_idx"] = None
+    _clear_form()
+
+def handle_save_btn():
+    errors = []
+    v_iban, m_iban = validate_iban(st.session_state.get("w_iban", ""))
+    if not v_iban: errors.append(f"IBAN: {m_iban}")
+    
+    pt_tp_id = st.session_state.get("w_pt_tp_id", "PO")
+    ico_enabled = pt_tp_id in ("PO", "FOP")
+    rc_enabled = pt_tp_id in ("FO", "FOP")
+
+    if ico_enabled:
+        v_ico, m_ico = validate_ico(st.session_state.get("w_ico", ""))
+        if not v_ico: errors.append(f"ICO: {m_ico}")
+    if rc_enabled:
+        v_rc, m_rc = validate_rc(st.session_state.get("w_rc", ""))
+        if not v_rc: errors.append(f"RC: {m_rc}")
+    
+    w_uni_pt_key = st.session_state.get("w_uni_pt_key", 0)
+    if w_uni_pt_key <= 0:
+        errors.append("UNI_PT_KEY must be a positive integer")
+
+    if errors:
+        st.session_state["form_errors"] = errors
+    else:
+        st.session_state["form_errors"] = []
+        party_sub = st.session_state.get("w_party_subcat", "unclassified_general")
+        purp_sub = st.session_state.get("w_purpose_subcat", "unclassified_general")
+        
+        is_party_unc = party_sub == "unclassified_general"
+        is_purp_unc = purp_sub == "unclassified_general"
+        
+        party_cat = get_cat_for_subcat(party_sub)
+        purp_cat = get_cat_for_subcat(purp_sub)
+        
+        new_row = {
+            "IBAN": st.session_state.get("w_iban", "").strip().upper(),
+            "UNI_PT_KEY": int(w_uni_pt_key),
+            "PT_TP_ID": pt_tp_id,
+            "ICO_NUM": st.session_state.get("w_ico", "").strip() if ico_enabled else "",
+            "RC_NUM": st.session_state.get("w_rc", "").strip() if rc_enabled else "",
+            "PARTY_SUBCAT": party_sub,
+            "PARTY_CAT": party_cat,
+            "PARTY_SUBCAT_VALIDITY": 99 if is_party_unc else int(st.session_state.get("w_party_validity", 99)),
+            "PURPOSE_SUBCAT": purp_sub,
+            "PURPOSE_CAT": purp_cat,
+            "PURPOSE_SUBCAT_VALIDITY": 99 if is_purp_unc else int(st.session_state.get("w_purpose_validity", 99)),
+            "CREATED_BY": "user",
+            "CREATED_AT": datetime.now(),
+            "UPDATED_AT": datetime.now(),
+        }
+
+        current_df = get_manual_acc_data()
+        current_sel_idx = st.session_state.get("last_sel_idx")
+        if current_sel_idx is not None and current_sel_idx in current_df.index:
+            for col, val in new_row.items():
+                current_df.at[current_sel_idx, col] = val
+            current_df.at[current_sel_idx, "UPDATED_AT"] = datetime.now()
+            st.session_state["manual_acc_data"] = current_df
+            st.session_state["form_success"] = "Record updated successfully!"
+        else:
+            new_df = pd.DataFrame([new_row])
+            st.session_state["manual_acc_data"] = pd.concat([current_df, new_df], ignore_index=True)
+            st.session_state["form_success"] = "New record created successfully!"
+            
+            if "acc_table" in st.session_state and "selection" in st.session_state.acc_table:
+                st.session_state.acc_table["selection"]["rows"] = []
+            st.session_state["last_sel_idx"] = None
+            _clear_form()
+
+
 if True:
     _init_form_state()
     df = get_manual_acc_data()
@@ -100,7 +240,7 @@ if True:
             filtered = filtered[filtered["RC_NUM"].str.contains(search_rc.strip(), na=False)]
 
         st.markdown(f"**Results ({len(filtered)} records)**")
-        st.caption("👈 Use the checkboxes on the left to select a row for editing")
+        st.caption("Use the checkboxes on the left to select a row for editing")
         display_cols = [
             "IBAN", "UNI_PT_KEY", "PT_TP_ID", "ICO_NUM", "RC_NUM",
             "PARTY_SUBCAT", "PARTY_CAT", "PURPOSE_SUBCAT", "PURPOSE_CAT",
@@ -145,7 +285,7 @@ if True:
 
         with st.container(border=True):
             if current_sel_idx is not None:
-                st.info("✏️ **Editing selected account.** Unselect the row to create a new entry.", icon="ℹ️")
+                st.info(" **Editing selected account.** Unselect the row to create a new entry.", icon="ℹ️")
             else:
                 st.success("➕ **Creating new account.** Fill the form and save.", icon="✨")
 
@@ -259,7 +399,7 @@ if True:
                 
                 if w_uni_pt_key <= 0:
                     errors.append("UNI_PT_KEY must be a positive integer")
-            """
+
                 if errors:
                     st.session_state["form_errors"] = errors
                 else:
@@ -307,7 +447,6 @@ if True:
                             st.session_state.acc_table["selection"]["rows"] = []
                         st.session_state["last_sel_idx"] = None
                         _clear_form()
-            """
 
             b1, b2 = st.columns(2)
             with b1:
