@@ -11,10 +11,15 @@ import pandas as pd
 import streamlit as st
 import streamlit_antd_components as sac
 
-from utils.categories import get_all_subcats, get_cat_for_subcat, get_grouped_subcats
+from utils.categories import get_grouped_subcats
+from utils.db import (
+    fetch_trn_for_labeling,
+    fetch_trn_validations as fetch_trn_validations_db,
+    is_db_configured,
+    save_trn_validations,
+)
 from utils.mock_data import get_trn_classified, get_trn_validations
 from utils.styles import page_header, section_header
-from utils.validators import validate_iban, validate_ico, validate_rc
 
 _DEFAULT_COLUMNS = [
     "SRC_IBAN",
@@ -45,6 +50,7 @@ _ALL_DISPLAY_COLUMNS = [
     "PURPOSE_SUBCAT",
     "PURPOSE_CAT",
 ]
+DB_MODE = is_db_configured()
 
 
 def _apply_filters(df: pd.DataFrame, filters: dict) -> pd.DataFrame:
@@ -147,7 +153,7 @@ if True:
     validated_count = 0
     if loaded_df is not None and "Validated" in loaded_df.columns:
         validated_count = int(loaded_df["Validated"].sum())
-    val_table = get_trn_validations()
+    val_table = fetch_trn_validations_db() if DB_MODE else get_trn_validations()
 
     with st.container(border=True):
         mc1, mc2, mc3, mc4 = st.columns(4)
@@ -217,25 +223,41 @@ if True:
     # LOAD DATA
     # ================================================================
     if load_clicked:
-        filters = {
-            "pay_tp": pay_tp,
-            "src_iban": src_iban,
-            "src_ico": src_ico,
-            "src_rc": src_rc,
-            "dest_iban": dest_iban,
-            "dest_ico": dest_ico,
-            "dest_rc": dest_rc,
-            "purpose_subcat": purpose_filter,
-            "date_from": date_from,
-            "date_to": date_to,
-            "num_rows": num_rows,
-        }
-
-        raw = get_trn_classified()
-        filtered = _apply_filters(raw, filters)
-        joined = _join_with_validations(filtered, get_trn_validations())
-        joined = _filter_by_validation_date(joined, last_val_date)
-        joined = _filter_uncertain(joined, uncertain)
+        if DB_MODE:
+            joined = fetch_trn_for_labeling(
+                pay_tp=pay_tp,
+                src_iban=src_iban,
+                src_ico=src_ico,
+                src_rc=src_rc,
+                dest_iban=dest_iban,
+                dest_ico=dest_ico,
+                dest_rc=dest_rc,
+                purpose_subcat=purpose_filter,
+                date_from=date_from,
+                date_to=date_to,
+                last_val_date=last_val_date,
+                uncertain_only=uncertain,
+                num_rows=num_rows,
+            )
+        else:
+            filters = {
+                "pay_tp": pay_tp,
+                "src_iban": src_iban,
+                "src_ico": src_ico,
+                "src_rc": src_rc,
+                "dest_iban": dest_iban,
+                "dest_ico": dest_ico,
+                "dest_rc": dest_rc,
+                "purpose_subcat": purpose_filter,
+                "date_from": date_from,
+                "date_to": date_to,
+                "num_rows": num_rows,
+            }
+            raw = get_trn_classified()
+            filtered = _apply_filters(raw, filters)
+            joined = _join_with_validations(filtered, get_trn_validations())
+            joined = _filter_by_validation_date(joined, last_val_date)
+            joined = _filter_uncertain(joined, uncertain)
 
         joined["Validated"] = False
         joined["CORRECTED_PURPOSE_SUBCAT"] = None
@@ -348,11 +370,14 @@ if True:
                         }
                     )
 
-                new_val_df = pd.DataFrame(new_validations)
-                existing = get_trn_validations()
-                st.session_state["trn_validations"] = pd.concat(
-                    [existing, new_val_df], ignore_index=True
-                )
+                if DB_MODE:
+                    save_trn_validations(new_validations)
+                else:
+                    new_val_df = pd.DataFrame(new_validations)
+                    existing = get_trn_validations()
+                    st.session_state["trn_validations"] = pd.concat(
+                        [existing, new_val_df], ignore_index=True
+                    )
 
                 st.session_state["labeling_step"] = 2
                 st.session_state["labeling_data"] = None
