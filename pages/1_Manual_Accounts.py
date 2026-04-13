@@ -9,7 +9,6 @@ import pandas as pd
 import streamlit as st
 
 from utils.categories import (
-    get_all_cats,
     get_cat_for_subcat,
     get_grouped_subcats,
     get_subcat_descriptions,
@@ -62,82 +61,7 @@ def _clear_form():
     st.session_state["w_purpose_subcat"] = "unclassified_general"
     st.session_state["w_purpose_validity"] = 99
 
-"""
-def handle_clear_btn():
-    if "acc_table" in st.session_state and "selection" in st.session_state.acc_table:
-        st.session_state.acc_table["selection"]["rows"] = []
-    st.session_state["last_sel_idx"] = None
-    _clear_form()
 
-def handle_save_btn():
-    errors = []
-    v_iban, m_iban = validate_iban(st.session_state.get("w_iban", ""))
-    if not v_iban: errors.append(f"IBAN: {m_iban}")
-    
-    pt_tp_id = st.session_state.get("w_pt_tp_id", "PO")
-    ico_enabled = pt_tp_id in ("PO", "FOP")
-    rc_enabled = pt_tp_id in ("FO", "FOP")
-
-    if ico_enabled:
-        v_ico, m_ico = validate_ico(st.session_state.get("w_ico", ""))
-        if not v_ico: errors.append(f"ICO: {m_ico}")
-    if rc_enabled:
-        v_rc, m_rc = validate_rc(st.session_state.get("w_rc", ""))
-        if not v_rc: errors.append(f"RC: {m_rc}")
-    
-    w_uni_pt_key = st.session_state.get("w_uni_pt_key", 0)
-    if w_uni_pt_key <= 0:
-        errors.append("UNI_PT_KEY must be a positive integer")
-
-    if errors:
-        st.session_state["form_errors"] = errors
-    else:
-        st.session_state["form_errors"] = []
-        party_sub = st.session_state.get("w_party_subcat", "unclassified_general")
-        purp_sub = st.session_state.get("w_purpose_subcat", "unclassified_general")
-        
-        is_party_unc = party_sub == "unclassified_general"
-        is_purp_unc = purp_sub == "unclassified_general"
-        
-        party_cat = get_cat_for_subcat(party_sub)
-        purp_cat = get_cat_for_subcat(purp_sub)
-        
-        new_row = {
-            "IBAN": st.session_state.get("w_iban", "").strip().upper(),
-            "UNI_PT_KEY": int(w_uni_pt_key),
-            "PT_TP_ID": pt_tp_id,
-            "ICO_NUM": st.session_state.get("w_ico", "").strip() if ico_enabled else "",
-            "RC_NUM": st.session_state.get("w_rc", "").strip() if rc_enabled else "",
-            "PARTY_SUBCAT": party_sub,
-            "PARTY_CAT": party_cat,
-            "PARTY_SUBCAT_VALIDITY": 99 if is_party_unc else int(st.session_state.get("w_party_validity", 99)),
-            "PURPOSE_SUBCAT": purp_sub,
-            "PURPOSE_CAT": purp_cat,
-            "PURPOSE_SUBCAT_VALIDITY": 99 if is_purp_unc else int(st.session_state.get("w_purpose_validity", 99)),
-            "CREATED_BY": "user",
-            "CREATED_AT": datetime.now(),
-            "UPDATED_AT": datetime.now(),
-        }
-
-        current_df = get_manual_acc_data()
-        current_sel_idx = st.session_state.get("last_sel_idx")
-        if current_sel_idx is not None and current_sel_idx in current_df.index:
-            for col, val in new_row.items():
-                current_df.at[current_sel_idx, col] = val
-            current_df.at[current_sel_idx, "UPDATED_AT"] = datetime.now()
-            st.session_state["manual_acc_data"] = current_df
-            st.session_state["form_success"] = "Record updated successfully!"
-        else:
-            new_df = pd.DataFrame([new_row])
-            st.session_state["manual_acc_data"] = pd.concat([current_df, new_df], ignore_index=True)
-            st.session_state["form_success"] = "New record created successfully!"
-            
-            if "acc_table" in st.session_state and "selection" in st.session_state.acc_table:
-                st.session_state.acc_table["selection"]["rows"] = []
-            st.session_state["last_sel_idx"] = None
-            _clear_form()
-
-"""
 if True:
     _init_form_state()
     df = get_manual_acc_data()
@@ -252,16 +176,22 @@ if True:
             st.divider()
             st.markdown("##### Party Classification")
             
-            # Safe index fallback to prevent "sports_club" bug
-            current_party_sub = st.session_state.get("w_party_subcat", "unclassified_general")
-            party_idx = subcats.index(current_party_sub) if current_party_sub in subcats else subcats.index("unclassified_general")
+            # Safe index fallback to prevent "sports_club" bug --> causing the state message about dual
+            #current_party_sub = st.session_state.get("w_party_subcat", "unclassified_general")
+            #party_idx = subcats.index(current_party_sub) if current_party_sub in subcats else subcats.index("unclassified_general")
             
+
+            # With key=, value lives in session_state; do not also pass index= (Streamlit warns).
+            if st.session_state.get("w_party_subcat") not in subcats:
+                st.session_state["w_party_subcat"] = "unclassified_general"
+
             party_sub = st.selectbox(
                 "PARTY_SUBCAT *",
                 options=subcats,
-                index=party_idx,
+                #index=party_idx,
                 key="w_party_subcat",
-                help=descs.get(current_party_sub, "")
+                #help=descs.get(current_party_sub, "")
+                help=descs.get(st.session_state["w_party_subcat"], ""),
             )
             party_cat = get_cat_for_subcat(party_sub)
             pc1, pc2 = st.columns([2, 1])
@@ -278,17 +208,22 @@ if True:
 
             st.divider()
             st.markdown("##### Purpose Classification")
-            
+
             # Safe index fallback for purpose too
-            current_purp_sub = st.session_state.get("w_purpose_subcat", "unclassified_general")
-            purp_idx = subcats.index(current_purp_sub) if current_purp_sub in subcats else subcats.index("unclassified_general")
+            #current_purp_sub = st.session_state.get("w_purpose_subcat", "unclassified_general")
+            #purp_idx = subcats.index(current_purp_sub) if current_purp_sub in subcats else subcats.index("unclassified_general")
             
+
+            if st.session_state.get("w_purpose_subcat") not in subcats:
+                st.session_state["w_purpose_subcat"] = "unclassified_general"
+
             purp_sub = st.selectbox(
                 "PURPOSE_SUBCAT *",
                 options=subcats,
-                index=purp_idx,
+                #index=purp_idx,
                 key="w_purpose_subcat",
-                help=descs.get(current_purp_sub, "")
+                #help=descs.get(current_purp_sub, "")
+                help=descs.get(st.session_state["w_purpose_subcat"], ""),
             )
             purp_cat = get_cat_for_subcat(purp_sub)
             pu1, pu2 = st.columns([2, 1])
