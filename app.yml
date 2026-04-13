@@ -1,6 +1,8 @@
 command: ["streamlit", "run", "app.py"]
 
 env:
+  - name: DATABRICKS_HOST
+    value: "adb-3863256616093854.14.azuredatabricks.net"
   - name: DATABRICKS_HTTP_PATH
     value: "/sql/1.0/warehouses/ae6aa8f47d2ee2d9"
   - name: DATABRICKS_CATALOG
