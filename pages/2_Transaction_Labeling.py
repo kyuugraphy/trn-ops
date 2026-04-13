@@ -3,8 +3,6 @@
 Guided workflow: Filter -> Review -> Validate -> Save.
 """
 
-from __future__ import annotations
-
 from datetime import date, datetime
 
 import pandas as pd
