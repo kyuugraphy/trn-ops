@@ -13,11 +13,13 @@ from utils.categories import (
     get_grouped_subcats,
     get_subcat_descriptions,
 )
+from utils.db import fetch_manual_acc_data, is_db_configured, save_manual_acc_record
 from utils.mock_data import get_manual_acc_data
 from utils.styles import page_header, section_header
 from utils.validators import validate_iban, validate_ico, validate_rc
 
 PT_TP_OPTIONS = ["PO", "FOP", "FO"]
+DB_MODE = is_db_configured()
 
 
 def _init_form_state():
@@ -64,7 +66,7 @@ def _clear_form():
 
 if True:
     _init_form_state()
-    df = get_manual_acc_data()
+    df = fetch_manual_acc_data() if DB_MODE else get_manual_acc_data()
     subcats = get_grouped_subcats()
     descs = get_subcat_descriptions()
 
@@ -91,13 +93,16 @@ if True:
             search_ico = sc2.text_input("Filter by ICO", placeholder="8 digits")
             search_rc = sc3.text_input("Filter by RC", placeholder="9-10 digits")
 
-        filtered = df.copy()
-        if search_iban and search_iban.strip():
-            filtered = filtered[filtered["IBAN"].str.upper().str.contains(search_iban.strip().upper(), na=False)]
-        if search_ico and search_ico.strip():
-            filtered = filtered[filtered["ICO_NUM"].str.contains(search_ico.strip(), na=False)]
-        if search_rc and search_rc.strip():
-            filtered = filtered[filtered["RC_NUM"].str.contains(search_rc.strip(), na=False)]
+        if DB_MODE:
+            filtered = fetch_manual_acc_data(search_iban, search_ico, search_rc)
+        else:
+            filtered = df.copy()
+            if search_iban and search_iban.strip():
+                filtered = filtered[filtered["IBAN"].str.upper().str.contains(search_iban.strip().upper(), na=False)]
+            if search_ico and search_ico.strip():
+                filtered = filtered[filtered["ICO_NUM"].str.contains(search_ico.strip(), na=False)]
+            if search_rc and search_rc.strip():
+                filtered = filtered[filtered["RC_NUM"].str.contains(search_rc.strip(), na=False)]
 
         st.markdown(f"**Results ({len(filtered)} records)**")
         st.caption("Use the checkboxes on the left to select a row for editing")
@@ -136,7 +141,7 @@ if True:
         if st.session_state["last_sel_idx"] != current_sel_idx:
             st.session_state["last_sel_idx"] = current_sel_idx
             if current_sel_idx is not None:
-                _load_row_into_form(df.loc[current_sel_idx])
+                _load_row_into_form(filtered.loc[current_sel_idx])
             else:
                 _clear_form()
 
@@ -175,7 +180,7 @@ if True:
 
             st.divider()
             st.markdown("##### Party Classification")
-            
+
             # Safe index fallback to prevent "sports_club" bug --> causing the state message about dual
             #current_party_sub = st.session_state.get("w_party_subcat", "unclassified_general")
             #party_idx = subcats.index(current_party_sub) if current_party_sub in subcats else subcats.index("unclassified_general")
@@ -301,23 +306,39 @@ if True:
                         "UPDATED_AT": datetime.now(),
                     }
 
-                    current_df = get_manual_acc_data()
                     idx = st.session_state.get("last_sel_idx")
-                    if idx is not None and idx in current_df.index:
-                        for col, val in new_row.items():
-                            current_df.at[idx, col] = val
-                        current_df.at[idx, "UPDATED_AT"] = datetime.now()
-                        st.session_state["manual_acc_data"] = current_df
-                        st.session_state["form_success"] = "Record updated successfully!"
+                    if DB_MODE:
+                        save_manual_acc_record(new_row)
+                        st.session_state["manual_acc_data"] = fetch_manual_acc_data(
+                            search_iban,
+                            search_ico,
+                            search_rc,
+                        )
+                        st.session_state["form_success"] = (
+                            "Record updated successfully!" if idx is not None else "New record created successfully!"
+                        )
+                        if idx is None:
+                            if "acc_table" in st.session_state and "selection" in st.session_state.acc_table:
+                                st.session_state.acc_table["selection"]["rows"] = []
+                            st.session_state["last_sel_idx"] = None
+                            _clear_form()
                     else:
-                        new_df = pd.DataFrame([new_row])
-                        st.session_state["manual_acc_data"] = pd.concat([current_df, new_df], ignore_index=True)
-                        st.session_state["form_success"] = "New record created successfully!"
-                        
-                        if "acc_table" in st.session_state and "selection" in st.session_state.acc_table:
-                            st.session_state.acc_table["selection"]["rows"] = []
-                        st.session_state["last_sel_idx"] = None
-                        _clear_form()
+                        current_df = get_manual_acc_data()
+                        if idx is not None and idx in current_df.index:
+                            for col, val in new_row.items():
+                                current_df.at[idx, col] = val
+                            current_df.at[idx, "UPDATED_AT"] = datetime.now()
+                            st.session_state["manual_acc_data"] = current_df
+                            st.session_state["form_success"] = "Record updated successfully!"
+                        else:
+                            new_df = pd.DataFrame([new_row])
+                            st.session_state["manual_acc_data"] = pd.concat([current_df, new_df], ignore_index=True)
+                            st.session_state["form_success"] = "New record created successfully!"
+
+                            if "acc_table" in st.session_state and "selection" in st.session_state.acc_table:
+                                st.session_state.acc_table["selection"]["rows"] = []
+                            st.session_state["last_sel_idx"] = None
+                            _clear_form()
 
             b1, b2 = st.columns(2)
             with b1:
