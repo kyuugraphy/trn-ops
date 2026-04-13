@@ -1,5 +1,11 @@
-command: [
-  "streamlit", 
-  "run",
-  "app.py"
-]
+command: ["streamlit", "run", "app.py"]
+
+env:
+  - name: DATABRICKS_HTTP_PATH
+    value: "/sql/1.0/warehouses/ae6aa8f47d2ee2d9"
+  - name: DATABRICKS_CATALOG
+    value: "kyuu_demo"
+  - name: DATABRICKS_SCHEMA
+    value: "trn_test"
+  - name: DATABRICKS_TOKEN
+    valueFrom: my-token

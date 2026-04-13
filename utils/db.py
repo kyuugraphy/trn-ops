@@ -11,6 +11,7 @@ import logging
 import os
 from contextlib import contextmanager
 from datetime import date, datetime
+from pathlib import Path
 
 import pandas as pd
 import streamlit as st
@@ -33,13 +34,23 @@ TRN_VALIDATION_TABLE = f"`{_CATALOG}`.`{_SCHEMA}`.`TRN_VALIDATION`"
 # Connection management
 # ---------------------------------------------------------------------------
 
+def _streamlit_secrets_file_exists() -> bool:
+    """Avoid touching `st.secrets` when no secrets.toml exists (prevents Streamlit UI noise on Databricks Apps)."""
+    candidates = (
+        Path(__file__).resolve().parent.parent / ".streamlit" / "secrets.toml",
+        Path("/home/app/.streamlit/secrets.toml"),
+        Path("/app/python/source_code/.streamlit/secrets.toml"),
+    )
+    return any(p.is_file() for p in candidates)
+
+
 def _get_connection_params() -> dict:
     """Resolve connection params from env vars or Streamlit secrets."""
     host = os.getenv("DATABRICKS_HOST", "")
     token = os.getenv("DATABRICKS_TOKEN", "")
     http_path = os.getenv("DATABRICKS_HTTP_PATH", "")
 
-    if not all([host, token, http_path]):
+    if not all([host, token, http_path]) and _streamlit_secrets_file_exists():
         try:
             host = host or st.secrets["DATABRICKS_HOST"]
             token = token or st.secrets["DATABRICKS_TOKEN"]
