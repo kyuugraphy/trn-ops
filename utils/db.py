@@ -7,8 +7,6 @@ Supports two modes:
 When DB is not configured, the app falls back to in-memory mock data.
 """
 
-from __future__ import annotations
-
 import logging
 import os
 from contextlib import contextmanager
@@ -22,8 +20,8 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Table references — override with env vars DATABRICKS_CATALOG / _SCHEMA
 # ---------------------------------------------------------------------------
-_CATALOG = os.getenv("DATABRICKS_CATALOG", "trn_catalog")
-_SCHEMA = os.getenv("DATABRICKS_SCHEMA", "trn_schema")
+_CATALOG = os.getenv("DATABRICKS_CATALOG", "kyuu_demo")
+_SCHEMA = os.getenv("DATABRICKS_SCHEMA", "trn_test")
 
 MANUAL_ACC_TABLE = f"`{_CATALOG}`.`{_SCHEMA}`.`MANUAL_ACC_DATA_CHANGES`"
 ACC_DATA_TAB_PIM_TABLE = f"`{_CATALOG}`.`{_SCHEMA}`.`ACC_DATA_TAB_PIM`"
