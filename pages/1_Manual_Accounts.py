@@ -62,7 +62,7 @@ def _clear_form():
     st.session_state["w_purpose_subcat"] = "unclassified_general"
     st.session_state["w_purpose_validity"] = 99
 
-
+"""
 def handle_clear_btn():
     if "acc_table" in st.session_state and "selection" in st.session_state.acc_table:
         st.session_state.acc_table["selection"]["rows"] = []
@@ -137,7 +137,7 @@ def handle_save_btn():
             st.session_state["last_sel_idx"] = None
             _clear_form()
 
-
+"""
 if True:
     _init_form_state()
     df = get_manual_acc_data()
