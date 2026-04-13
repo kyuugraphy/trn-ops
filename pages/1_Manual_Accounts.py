@@ -285,9 +285,9 @@ if True:
 
         with st.container(border=True):
             if current_sel_idx is not None:
-                st.info(" **Editing selected account.** Unselect the row to create a new entry.", icon="ℹ️")
+                st.info("**Editing selected account.** Unselect the row to create a new entry.")
             else:
-                st.success("➕ **Creating new account.** Fill the form and save.", icon="✨")
+                st.success("**Creating new account.** Fill the form and save.")
 
             st.markdown("##### Account Identity")
             c1, c2 = st.columns(2)
