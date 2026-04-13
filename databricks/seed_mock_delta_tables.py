@@ -12,14 +12,20 @@ Creates / overwrites (Unity Catalog):
   trn_catalog.trn_schema.TRN_VALIDATION
 
 Column layouts match `utils/mock_data.py` + `utils/db.py` expectations.
-"""
 
-from __future__ import annotations
+Requires the **trn-ops repo layout** on the driver: `utils/categories.py` and
+`categories.json` at the repo root (parent of `databricks/`). The script adds
+the repo root to `sys.path` so `utils.categories` resolves like the Streamlit app.
+If you open only this file in a notebook, `%cd` to the repo root first or attach
+the full repo.
+"""
 
 # COMMAND ----------
 
 import json
+import sys
 from datetime import datetime, timedelta
+from pathlib import Path
 from random import Random
 
 from pyspark.sql import SparkSession
@@ -34,14 +40,30 @@ from pyspark.sql.types import (
 
 spark: SparkSession = spark  # noqa: F821 — provided by Databricks runtime
 
+
+def _repo_root() -> Path:
+    try:
+        return Path(__file__).resolve().parent.parent
+    except NameError:
+        return Path.cwd()
+
+
+REPO_ROOT = _repo_root()
+_REPO_STR = str(REPO_ROOT)
+if _REPO_STR not in sys.path:
+    sys.path.insert(0, _REPO_STR)
+
+try:
+    from utils.categories import get_all_subcats, get_cat_for_subcat
+except ImportError:
+    get_all_subcats = None  # type: ignore[assignment]
+    get_cat_for_subcat = None  # type: ignore[assignment]
+
 # ---------------------------------------------------------------------------
 # Config — edit for your workspace
 # ---------------------------------------------------------------------------
 CATALOG = "trn_catalog"
 SCHEMA = "trn_schema"
-
-# e.g. "/dbfs/FileStore/trn_ops/categories.json" — or None for DEFAULT_SUBCATS
-CATEGORIES_JSON_DBFS: str | None = None
 
 N_MANUAL = 12
 N_TRN = 200
@@ -77,30 +99,43 @@ _SAMPLE_MESSAGES = [
     "",
 ]
 
-DEFAULT_SUBCATS = [
-    "sports_club",
-    "charity",
-    "atm",
-    "unclassified_general",
-    "bank_general",
-    "car_dealer",
-    "moneta",
-    "association_general",
-    "petrol_station",
-    "financial_nonbanking_general",
-]
+def _load_categories_json(path: Path) -> dict:
+    with open(path, encoding="utf-8") as f:
+        return json.loads(f.read().replace("\u00a0", " "))
 
 
-def _load_subcats() -> list[str]:
-    if not CATEGORIES_JSON_DBFS:
-        return DEFAULT_SUBCATS
-    with open(CATEGORIES_JSON_DBFS, encoding="utf-8") as f:
-        raw = json.loads(f.read().replace("\u00a0", " "))
-    names: list[str] = []
-    for _cat, entries in raw.items():
-        for e in entries:
-            names.append(e["name"])
+def _subcats_from_raw(raw: dict) -> list[str]:
+    names = [e["name"] for entries in raw.values() for e in entries]
     return sorted(set(names))
+
+
+def _subcat_to_cat_from_raw(raw: dict) -> dict[str, str]:
+    return {e["name"]: cat for cat, entries in raw.items() for e in entries}
+
+
+def load_subcats() -> list[str]:
+    """Subcategory names: same as `utils.categories.get_all_subcats()`."""
+    if get_all_subcats is not None:
+        return get_all_subcats()
+    path = REPO_ROOT / "categories.json"
+    if not path.is_file():
+        raise FileNotFoundError(
+            f"Cannot import utils.categories and categories.json missing at {path}. "
+            "Use the full trn-ops repo and run from repo root."
+        )
+    return _subcats_from_raw(_load_categories_json(path))
+
+
+def parent_cat_for_subcat(subcat: str) -> str:
+    """Parent category: same as `utils.categories.get_cat_for_subcat()`."""
+    if get_cat_for_subcat is not None:
+        return get_cat_for_subcat(subcat)
+    path = REPO_ROOT / "categories.json"
+    if not path.is_file():
+        raise FileNotFoundError(
+            f"Cannot import utils.categories and categories.json missing at {path}."
+        )
+    return _subcat_to_cat_from_raw(_load_categories_json(path)).get(subcat, "")
 
 
 def _rand_rc(rng: Random) -> str:
@@ -116,23 +151,6 @@ def _rand_date(rng: Random, start_year: int = 2025, end_year: int = 2026) -> dat
     end = datetime(end_year, 12, 31)
     delta_days = (end - start).days
     return start + timedelta(days=rng.randint(0, delta_days))
-
-
-def _subcat_to_cat(subcat: str) -> str:
-    """Tiny fallback map; real app uses full `categories.json`."""
-    hints = {
-        "sports_club": "associations",
-        "charity": "associations",
-        "association_general": "associations",
-        "atm": "banking_and_financial",
-        "bank_general": "banking_and_financial",
-        "moneta": "banking_and_financial",
-        "financial_nonbanking_general": "banking_and_financial",
-        "car_dealer": "automotive",
-        "petrol_station": "automotive",
-        "unclassified_general": "unclassified",
-    }
-    return hints.get(subcat, "")
 
 
 def _build_manual_rows(subcats: list[str], n: int) -> list[tuple]:
@@ -160,10 +178,10 @@ def _build_manual_rows(subcats: list[str], n: int) -> list[tuple]:
                 ico,
                 rc,
                 party_sub,
-                _subcat_to_cat(party_sub),
+                parent_cat_for_subcat(party_sub),
                 int(rng.randint(50, 99)),
                 purpose_sub,
-                _subcat_to_cat(purpose_sub),
+                parent_cat_for_subcat(purpose_sub),
                 int(rng.randint(50, 99)),
                 "system_seed",
                 created,
@@ -201,7 +219,7 @@ def _build_trn_rows(subcats: list[str], n: int) -> list[tuple]:
                 rng.choice(_SAMPLE_MESSAGES),
                 party_sub,
                 purpose_sub,
-                _subcat_to_cat(purpose_sub),
+                parent_cat_for_subcat(purpose_sub),
             )
         )
     return rows
@@ -225,7 +243,7 @@ spark.sql(f"CREATE SCHEMA IF NOT EXISTS {CATALOG}.{SCHEMA}")
 spark.sql(f"USE CATALOG {CATALOG}")
 spark.sql(f"USE {SCHEMA}")
 
-subcats = _load_subcats()
+subcats = load_subcats()
 
 manual_cols = [
     "IBAN",
