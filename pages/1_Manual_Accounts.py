@@ -3,6 +3,7 @@
 Search -> Browse -> Edit workflow for MANUAL_ACC_DATA_CHANGES.
 """
 
+import os
 from datetime import datetime
 
 import pandas as pd
@@ -71,6 +72,19 @@ if True:
     descs = get_subcat_descriptions()
 
     page_header("Manual Accounts", "Search, create, and edit manual account data entries")
+
+    _live_db = is_db_configured()
+    with st.expander("Data source / DB_MODE debug", expanded=True):
+        st.write("**`DB_MODE`** (when this page module was imported):", DB_MODE)
+        st.write("**`is_db_configured()`** (fresh call this run):", _live_db)
+        st.caption(
+            "If both are False, the grid uses mock data. "
+            "If `DB_MODE` is False but env vars show set, redeploy/restart so the page loads after env is injected."
+        )
+        st.markdown("**Env in this process (values not shown):**")
+        for _k in ("DATABRICKS_HOST", "DATABRICKS_TOKEN", "DATABRICKS_HTTP_PATH"):
+            _set = bool(str(os.getenv(_k, "")).strip())
+            st.markdown(f"- `{_k}`: **{'set' if _set else 'missing'}**")
 
     # Metrics
     with st.container(border=True):
