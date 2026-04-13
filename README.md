@@ -3,7 +3,7 @@
 Streamlit application for transaction classification support. Provides two main screens:
 
 - **Manual Accounts**
-Goal: Allow users to manually create/edit account records in the MANUAL_ACC_DATA_CHANGES table, which feeds into ACC_DATA_TAB_PIM.
+Goal: Allow users to manually create/edit account records in the **MANUAL_ACC_DATA_CHANGES** table, which feeds into ACC_DATA_TAB_PIM.
 
 Workflow:
 
@@ -13,7 +13,7 @@ A dataframe displays saved records; selecting a row loads its data back into the
 User can Save validated form data into the table (enriched with uni_pt_data before write).
 
 - **Transaction Labeling**
-Goal: Let users review random transactions from TRN_CLASSIFIED_12M, validate/correct their purpose classification, and save the labeling results.
+Goal: Let users review random transactions from **TRN_CLASSIFIED_12M**, validate/correct their purpose classification, and save the labeling results into **TRN_VALIDATION**.
 
 Workflow:
 
