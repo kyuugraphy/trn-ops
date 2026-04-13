@@ -38,9 +38,6 @@ from pyspark.sql.types import (
     TimestampType,
 )
 
-spark: SparkSession = spark  # noqa: F821 — provided by Databricks runtime
-
-
 def _repo_root() -> Path:
     try:
         return Path(__file__).resolve().parent.parent
@@ -62,8 +59,9 @@ except ImportError:
 # ---------------------------------------------------------------------------
 # Config — edit for your workspace
 # ---------------------------------------------------------------------------
-CATALOG = "trn_catalog"
-SCHEMA = "trn_schema"
+
+CATALOG = "kyuu_demo"
+SCHEMA = "trn_test"
 
 N_MANUAL = 12
 N_TRN = 200
