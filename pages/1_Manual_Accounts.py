@@ -62,55 +62,6 @@ def _clear_form():
     st.session_state["w_purpose_subcat"] = "unclassified_general"
     st.session_state["w_purpose_validity"] = 99
 
-    if errors:
-        st.session_state["form_errors"] = errors
-    else:
-        st.session_state["form_errors"] = []
-        party_sub = st.session_state.get("w_party_subcat", "unclassified_general")
-        purp_sub = st.session_state.get("w_purpose_subcat", "unclassified_general")
-        
-        is_party_unc = party_sub == "unclassified_general"
-        is_purp_unc = purp_sub == "unclassified_general"
-        
-        party_cat = get_cat_for_subcat(party_sub)
-        purp_cat = get_cat_for_subcat(purp_sub)
-        
-        new_row = {
-            "IBAN": st.session_state.get("w_iban", "").strip().upper(),
-            "UNI_PT_KEY": int(w_uni_pt_key),
-            "PT_TP_ID": pt_tp_id,
-            "ICO_NUM": st.session_state.get("w_ico", "").strip() if ico_enabled else "",
-            "RC_NUM": st.session_state.get("w_rc", "").strip() if rc_enabled else "",
-            "PARTY_SUBCAT": party_sub,
-            "PARTY_CAT": party_cat,
-            "PARTY_SUBCAT_VALIDITY": 99 if is_party_unc else int(st.session_state.get("w_party_validity", 99)),
-            "PURPOSE_SUBCAT": purp_sub,
-            "PURPOSE_CAT": purp_cat,
-            "PURPOSE_SUBCAT_VALIDITY": 99 if is_purp_unc else int(st.session_state.get("w_purpose_validity", 99)),
-            "CREATED_BY": "user",
-            "CREATED_AT": datetime.now(),
-            "UPDATED_AT": datetime.now(),
-        }
-
-        current_df = get_manual_acc_data()
-        current_sel_idx = st.session_state.get("last_sel_idx")
-        if current_sel_idx is not None and current_sel_idx in current_df.index:
-            for col, val in new_row.items():
-                current_df.at[current_sel_idx, col] = val
-            current_df.at[current_sel_idx, "UPDATED_AT"] = datetime.now()
-            st.session_state["manual_acc_data"] = current_df
-            st.session_state["form_success"] = "Record updated successfully!"
-        else:
-            new_df = pd.DataFrame([new_row])
-            st.session_state["manual_acc_data"] = pd.concat([current_df, new_df], ignore_index=True)
-            st.session_state["form_success"] = "New record created successfully!"
-            
-            if "acc_table" in st.session_state and "selection" in st.session_state.acc_table:
-                st.session_state.acc_table["selection"]["rows"] = []
-            st.session_state["last_sel_idx"] = None
-            _clear_form()
-
-
 if True:
     _init_form_state()
     df = get_manual_acc_data()
