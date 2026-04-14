@@ -180,7 +180,6 @@ with right_col:
         st.divider()
         st.markdown("##### Party Classification")
 
-        # With key=, value lives in session_state; do not also pass index= (Streamlit warns).
         if st.session_state.get("w_party_subcat") not in subcats:
             st.session_state["w_party_subcat"] = "unclassified_general"
 
@@ -188,11 +187,11 @@ with right_col:
             "PARTY_SUBCAT *",
             options=subcats,
             key="w_party_subcat",
-            help=descs.get(st.session_state["w_party_subcat"], ""),
         )
         party_cat = get_cat_for_subcat(party_sub)
         pc1, pc2 = st.columns([2, 1])
         pc1.text_input("PARTY_CAT (auto)", value=party_cat, disabled=True)
+        st.caption(descs.get(party_sub, ""))
 
         is_party_unc = party_sub == "unclassified_general"
         pc2.number_input(
@@ -213,11 +212,11 @@ with right_col:
             "PURPOSE_SUBCAT *",
             options=subcats,
             key="w_purpose_subcat",
-            help=descs.get(st.session_state["w_purpose_subcat"], ""),
         )
         purp_cat = get_cat_for_subcat(purp_sub)
         pu1, pu2 = st.columns([2, 1])
         pu1.text_input("PURPOSE_CAT (auto)", value=purp_cat, disabled=True)
+        st.caption(descs.get(purp_sub, ""))
 
         is_purp_unc = purp_sub == "unclassified_general"
         pu2.number_input(
