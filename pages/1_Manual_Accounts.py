@@ -13,13 +13,12 @@ from utils.categories import (
     get_grouped_subcats,
     get_subcat_descriptions,
 )
-from utils.db import fetch_manual_acc_data, is_db_configured, save_manual_acc_record
+from utils.db import fetch_manual_acc_data, save_manual_acc_record
 from utils.mock_data import get_manual_acc_data
 from utils.styles import page_header, section_header
 from utils.validators import validate_iban, validate_ico, validate_rc
 
 PT_TP_OPTIONS = ["PO", "FOP", "FO"]
-DB_MODE = is_db_configured()
 
 
 def _init_form_state():
@@ -181,11 +180,6 @@ if True:
             st.divider()
             st.markdown("##### Party Classification")
 
-            # Safe index fallback to prevent "sports_club" bug --> causing the state message about dual
-            #current_party_sub = st.session_state.get("w_party_subcat", "unclassified_general")
-            #party_idx = subcats.index(current_party_sub) if current_party_sub in subcats else subcats.index("unclassified_general")
-            
-
             # With key=, value lives in session_state; do not also pass index= (Streamlit warns).
             if st.session_state.get("w_party_subcat") not in subcats:
                 st.session_state["w_party_subcat"] = "unclassified_general"
@@ -193,9 +187,7 @@ if True:
             party_sub = st.selectbox(
                 "PARTY_SUBCAT *",
                 options=subcats,
-                #index=party_idx,
                 key="w_party_subcat",
-                #help=descs.get(current_party_sub, "")
                 help=descs.get(st.session_state["w_party_subcat"], ""),
             )
             party_cat = get_cat_for_subcat(party_sub)
@@ -214,10 +206,6 @@ if True:
             st.divider()
             st.markdown("##### Purpose Classification")
 
-            # Safe index fallback for purpose too
-            #current_purp_sub = st.session_state.get("w_purpose_subcat", "unclassified_general")
-            #purp_idx = subcats.index(current_purp_sub) if current_purp_sub in subcats else subcats.index("unclassified_general")
-            
 
             if st.session_state.get("w_purpose_subcat") not in subcats:
                 st.session_state["w_purpose_subcat"] = "unclassified_general"
@@ -225,9 +213,7 @@ if True:
             purp_sub = st.selectbox(
                 "PURPOSE_SUBCAT *",
                 options=subcats,
-                #index=purp_idx,
                 key="w_purpose_subcat",
-                #help=descs.get(current_purp_sub, "")
                 help=descs.get(st.session_state["w_purpose_subcat"], ""),
             )
             purp_cat = get_cat_for_subcat(purp_sub)

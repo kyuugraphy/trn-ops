@@ -15,4 +15,4 @@ Please select an option from the sidebar to continue:
 
 with st.sidebar:
     st.markdown("## TrnClassification")
-    st.caption("v1.0.0 · Mock Data Mode")
+    st.caption("v2.0.0 · Demo Mode")
