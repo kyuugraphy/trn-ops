@@ -7,7 +7,6 @@ Supports two modes:
 When DB is not configured, the app falls back to in-memory mock data.
 """
 
-import logging
 import os
 from contextlib import contextmanager
 from datetime import date, datetime
@@ -16,7 +15,6 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
-logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Table references — override with env vars DATABRICKS_CATALOG / _SCHEMA
@@ -180,39 +178,6 @@ def save_manual_acc_record(record: dict) -> None:
         )
     """
     _write(sql, record)
-
-
-def fetch_acc_data_tab_pim(
-    uni_pt_key: int | None = None,
-    iban: str = "",
-    ico: str = "",
-    rc: str = "",
-    limit: int = 100,
-) -> pd.DataFrame:
-    """Query ACC_DATA_TAB_PIM for enrichment/reference data."""
-    conditions = ["1=1"]
-    params: dict = {"limit": limit}
-
-    if uni_pt_key is not None:
-        conditions.append("UNI_PT_KEY = %(uni_pt_key)s")
-        params["uni_pt_key"] = int(uni_pt_key)
-    if iban.strip():
-        conditions.append("UPPER(IBAN) LIKE UPPER(%(iban)s)")
-        params["iban"] = f"%{iban.strip()}%"
-    if ico.strip():
-        conditions.append("ICO_NUM LIKE %(ico)s")
-        params["ico"] = f"%{ico.strip()}%"
-    if rc.strip():
-        conditions.append("RC_NUM LIKE %(rc)s")
-        params["rc"] = f"%{rc.strip()}%"
-
-    sql = f"""
-        SELECT *
-        FROM {ACC_DATA_TAB_PIM_TABLE}
-        WHERE {' AND '.join(conditions)}
-        LIMIT %(limit)s
-    """
-    return _read(sql, params)
 
 
 # ---------------------------------------------------------------------------

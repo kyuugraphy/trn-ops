@@ -3,7 +3,6 @@
 Guided workflow: Filter -> Review -> Validate -> Save.
 """
 
-import os
 from datetime import date, datetime
 
 import pandas as pd
@@ -133,20 +132,6 @@ if True:
     all_subcats_with_extra = subcats + ["not_determinable"]
 
     page_header("Transaction Labeling", "Review and validate classified transactions")
-
-    _live_db = is_db_configured()
-    with st.expander("Data source / DB_MODE debug", expanded=True):
-        st.write("**`DB_MODE`** (when this page module was imported):", DB_MODE)
-        st.write("**`is_db_configured()`** (fresh call this run):", _live_db)
-        st.write("**`db_mode`** (used for load/save on this page):", DB_MODE)
-        st.caption(
-            "If `db_mode` is False, loads use mock data and saves go to session only. "
-            "If `DB_MODE` is False but env vars show set, redeploy/restart so the page loads after env is injected."
-        )
-        st.markdown("**Env in this process (values not shown):**")
-        for _k in ("DATABRICKS_HOST", "DATABRICKS_TOKEN", "DATABRICKS_HTTP_PATH"):
-            _set = bool(str(os.getenv(_k, "")).strip())
-            st.markdown(f"- `{_k}`: **{'set' if _set else 'missing'}**")
 
     # -- Step indicator --
     current_step = st.session_state.get("labeling_step", 0)

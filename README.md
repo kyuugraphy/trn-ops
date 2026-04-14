@@ -71,4 +71,3 @@ WHAT NEXT:
 - Write to dev table with timestamp + user
 - Verify written data manually
 - Switch to real table
-
