@@ -16,8 +16,8 @@ with st.sidebar:
     with st.expander("Table Configuration", icon=":material/database:"):
         st.caption("Override catalog.schema.table for each role. Defaults come from env vars.")
         for key, label in [
-            ("manual_acc", "Manual Accounts (read/write)"),
             ("acc_data_pim", "ACC_DATA_TAB_PIM (read)"),
+            ("manual_acc", "Manual Accounts (read/write)"),
             ("trn_classified", "TRN Classified (read)"),
             ("trn_validation", "TRN Validation (read/write)"),
         ]:
