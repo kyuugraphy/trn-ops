@@ -17,15 +17,26 @@ import streamlit as st
 
 
 # ---------------------------------------------------------------------------
-# Table references — override with env vars DATABRICKS_CATALOG / _SCHEMA
+# Table configuration — defaults from env, overridable via sidebar
 # ---------------------------------------------------------------------------
-_CATALOG = os.getenv("DATABRICKS_CATALOG", "kyuu_demo")
-_SCHEMA = os.getenv("DATABRICKS_SCHEMA", "trn_test")
+_DEFAULT_CATALOG = os.getenv("DATABRICKS_CATALOG", "kyuu_demo")
+_DEFAULT_SCHEMA = os.getenv("DATABRICKS_SCHEMA", "trn_test")
 
-MANUAL_ACC_TABLE = f"{_CATALOG}.{_SCHEMA}.MANUAL_ACC_DATA_CHANGES"
-ACC_DATA_TAB_PIM_TABLE = f"{_CATALOG}.{_SCHEMA}.ACC_DATA_TAB_PIM"
-TRN_CLASSIFIED_TABLE = f"{_CATALOG}.{_SCHEMA}.TRN_CLASSIFIED_12M"
-TRN_VALIDATION_TABLE = f"{_CATALOG}.{_SCHEMA}.TRN_VALIDATION"
+TABLE_DEFAULTS = {
+    "manual_acc": f"{_DEFAULT_CATALOG}.{_DEFAULT_SCHEMA}.MANUAL_ACC_DATA_CHANGES",
+    "acc_data_pim": f"{_DEFAULT_CATALOG}.{_DEFAULT_SCHEMA}.ACC_DATA_TAB_PIM",
+    "trn_classified": f"{_DEFAULT_CATALOG}.{_DEFAULT_SCHEMA}.TRN_CLASSIFIED_12M",
+    "trn_validation": f"{_DEFAULT_CATALOG}.{_DEFAULT_SCHEMA}.TRN_VALIDATION",
+}
+
+
+def get_table(key: str) -> str:
+    """Return the current fully-qualified table name for *key*.
+
+    Reads from session state (set by the sidebar configurator) with a
+    fallback to the env-based default.
+    """
+    return st.session_state.get(f"tbl_{key}", TABLE_DEFAULTS[key])
 
 
 # ---------------------------------------------------------------------------
@@ -123,7 +134,7 @@ def fetch_manual_acc_data(
 
     sql = f"""
         SELECT *
-        FROM {MANUAL_ACC_TABLE}
+        FROM {get_table('manual_acc')}
         WHERE {' AND '.join(conditions)}
         ORDER BY UPDATED_AT DESC
         LIMIT 1000
@@ -134,7 +145,7 @@ def fetch_manual_acc_data(
 def save_manual_acc_record(record: dict) -> None:
     """MERGE (upsert) a single record keyed by UNI_PT_KEY."""
     sql = f"""
-        MERGE INTO {MANUAL_ACC_TABLE} AS t
+        MERGE INTO {get_table('manual_acc')} AS t
         USING (
             SELECT
                 %(IBAN)s                    AS IBAN,
@@ -253,14 +264,14 @@ def fetch_trn_for_labeling(
                 ACC_TRN_KEY,
                 MAX(VALIDATION_TIME_STAMP)                       AS LAST_VALIDATED,
                 MAX_BY(PURPOSE_SUBCAT, VALIDATION_TIME_STAMP)    AS LAST_PURPOSE_SUBCAT
-            FROM {TRN_VALIDATION_TABLE}
+            FROM {get_table('trn_validation')}
             GROUP BY ACC_TRN_KEY
         )
         SELECT
             t.*,
             v.LAST_VALIDATED,
             COALESCE(v.LAST_PURPOSE_SUBCAT, '') AS LAST_PURPOSE_SUBCAT
-        FROM {TRN_CLASSIFIED_TABLE} t
+        FROM {get_table('trn_classified')} t
         LEFT JOIN latest_validations v ON t.ACC_TRN_KEY = v.ACC_TRN_KEY
         WHERE {' AND '.join(conditions)}
         ORDER BY RAND()
@@ -276,7 +287,7 @@ def fetch_trn_validations(acc_trn_keys: list | None = None) -> pd.DataFrame:
             columns=["ACC_TRN_KEY", "VALIDATION_TIME_STAMP", "USER", "PURPOSE_SUBCAT", "NOTE"]
         )
 
-    sql = f"SELECT * FROM {TRN_VALIDATION_TABLE}"
+    sql = f"SELECT * FROM {get_table('trn_validation')}"
     params: dict = {}
 
     if acc_trn_keys is not None:
@@ -295,7 +306,7 @@ def save_trn_validations(validations: list[dict]) -> None:
         return
 
     insert_sql = f"""
-        INSERT INTO {TRN_VALIDATION_TABLE}
+        INSERT INTO {get_table('trn_validation')}
             (ACC_TRN_KEY, VALIDATION_TIME_STAMP, `USER`, PURPOSE_SUBCAT, NOTE)
         VALUES
             (%(ACC_TRN_KEY)s, %(VALIDATION_TIME_STAMP)s, %(USER)s, %(PURPOSE_SUBCAT)s, %(NOTE)s)
