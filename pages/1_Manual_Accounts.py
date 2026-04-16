@@ -33,10 +33,19 @@ def _init_form_state():
         "w_purpose_subcat": "unclassified_general",
         "w_purpose_validity": 99,
         "last_sel_idx": None,
+        "acc_table_ver": 0,
     }
     for k, v in defaults.items():
         if k not in st.session_state:
             st.session_state[k] = v
+
+
+def _reset_table_selection():
+    """Bump the table key version to force a fresh widget with empty selection."""
+    old_key = f"acc_table_{st.session_state['acc_table_ver']}"
+    if old_key in st.session_state:
+        del st.session_state[old_key]
+    st.session_state["acc_table_ver"] += 1
 
 
 def _load_row_into_form(row: pd.Series):
@@ -120,6 +129,7 @@ with left_col:
     num_rows = len(st.session_state.last_display_df)
     dynamic_height = min(600, 38 + max(1, num_rows) * 35)
 
+    TABLE_KEY = f"acc_table_{st.session_state['acc_table_ver']}"
     table_event = st.dataframe(
         st.session_state.last_display_df,
         use_container_width=True,
@@ -127,7 +137,7 @@ with left_col:
         height=dynamic_height,
         on_select="rerun",
         selection_mode="single-row",
-        key="acc_table",
+        key=TABLE_KEY,
     )
 
     sel_rows = table_event.selection.rows
@@ -233,9 +243,7 @@ with right_col:
         st.markdown("<br>", unsafe_allow_html=True)
 
         def on_clear_btn():
-            # Force deselection of table to clear state cleanly
-            if "acc_table" in st.session_state and "selection" in st.session_state.acc_table:
-                st.session_state.acc_table["selection"]["rows"] = []
+            _reset_table_selection()
             st.session_state["last_sel_idx"] = None
             _clear_form()
 
@@ -305,8 +313,7 @@ with right_col:
                         "Record updated successfully!" if idx is not None else "New record created successfully!"
                     )
                     if idx is None:
-                        if "acc_table" in st.session_state and "selection" in st.session_state.acc_table:
-                            st.session_state.acc_table["selection"]["rows"] = []
+                        _reset_table_selection()
                         st.session_state["last_sel_idx"] = None
                         _clear_form()
                 else:
@@ -322,8 +329,7 @@ with right_col:
                         st.session_state["manual_acc_data"] = pd.concat([current_df, new_df], ignore_index=True)
                         st.session_state["form_success"] = "New record created successfully!"
 
-                        if "acc_table" in st.session_state and "selection" in st.session_state.acc_table:
-                            st.session_state.acc_table["selection"]["rows"] = []
+                        _reset_table_selection()
                         st.session_state["last_sel_idx"] = None
                         _clear_form()
 
