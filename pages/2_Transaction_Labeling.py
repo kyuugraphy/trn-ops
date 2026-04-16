@@ -150,7 +150,15 @@ loaded_df = st.session_state.get("labeling_data")
 total_loaded = len(loaded_df) if loaded_df is not None else 0
 validated_count = 0
 if loaded_df is not None and "Validated" in loaded_df.columns:
-    validated_count = int(loaded_df["Validated"].sum())
+    editor_state = st.session_state.get("labeling_editor")
+    if editor_state is not None and "edited_rows" in editor_state:
+        _tmp = loaded_df["Validated"].copy()
+        for row_idx_str, changes in editor_state["edited_rows"].items():
+            if "Validated" in changes:
+                _tmp.iloc[int(row_idx_str)] = changes["Validated"]
+        validated_count = int(_tmp.sum())
+    else:
+        validated_count = int(loaded_df["Validated"].sum())
 val_table = fetch_trn_validations_db() if DB_MODE else get_trn_validations()
 
 with st.container(border=True):
@@ -281,12 +289,11 @@ if labeling_df is not None and not labeling_df.empty:
     with tb2:
         save_validation = st.button("Save Validation", type="primary", key="btn_save_validation", use_container_width=True)
     with tb3:
-        confirmed = labeling_df["Validated"].sum() if "Validated" in labeling_df.columns else 0
         sac.tags(
             [
                 sac.Tag(label=f"{len(labeling_df)} loaded", color="blue"),
-                sac.Tag(label=f"{int(confirmed)} validated", color="green"),
-                sac.Tag(label=f"{len(labeling_df) - int(confirmed)} pending", color="orange"),
+                sac.Tag(label=f"{validated_count} validated", color="green"),
+                sac.Tag(label=f"{total_loaded - validated_count} pending", color="orange"),
             ],
             align="end",
         )
@@ -330,17 +337,22 @@ if labeling_df is not None and not labeling_df.empty:
         labeling_df["Validated"] = True
         st.session_state["labeling_data"] = labeling_df
         st.session_state["labeling_step"] = 2
+        if "labeling_editor" in st.session_state:
+            del st.session_state["labeling_editor"]
         st.toast("All transactions marked as validated!")
         st.rerun()
 
+    # Merge user edits into the working df ONLY for reads (save, metrics),
+    # but do NOT write back into labeling_data — that would change the
+    # data_editor source and reset the widget on the next rerun.
+    working_df = labeling_df.copy()
     if edited is not None:
         for col in editable_cols:
             if col in edited.columns:
-                labeling_df[col] = edited[col].values
-        st.session_state["labeling_data"] = labeling_df
+                working_df[col] = edited[col].values
 
     if save_validation:
-        validated_rows = labeling_df[labeling_df["Validated"] == True]  # noqa: E712
+        validated_rows = working_df[working_df["Validated"] == True]  # noqa: E712
 
         if validated_rows.empty:
             sac.alert(
