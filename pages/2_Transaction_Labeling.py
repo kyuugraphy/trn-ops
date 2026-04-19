@@ -266,7 +266,7 @@ if load_clicked:
         joined = _filter_uncertain(joined, uncertain)
 
     joined["Validated"] = False
-    joined["CORRECTED_PURPOSE_SUBCAT"] = None
+    joined["CORRECTED_PURPOSE_SUBCAT"] = pd.Series([None] * len(joined), dtype="object")
     joined["NOTE"] = ""
 
     st.session_state["labeling_data"] = joined
@@ -333,7 +333,35 @@ if labeling_df is not None and not labeling_df.empty:
         key="labeling_editor",
     )
 
+    # -----------------------------------------------------------
+    # Auto-fill CORRECTED_PURPOSE_SUBCAT when Validated is ticked
+    # -----------------------------------------------------------
+    _needs_rerun = False
+    if edited is not None:
+        for idx in edited.index:
+            row_validated = edited.at[idx, "Validated"]
+            was_validated = labeling_df.at[idx, "Validated"]
+            corrected_val = edited.at[idx, "CORRECTED_PURPOSE_SUBCAT"]
+            corrected_empty = (pd.isna(corrected_val) or corrected_val == "" or corrected_val is None)
+
+            if row_validated and not was_validated and corrected_empty:
+                labeling_df.at[idx, "CORRECTED_PURPOSE_SUBCAT"] = labeling_df.at[idx, "PURPOSE_SUBCAT"]
+                labeling_df.at[idx, "Validated"] = True
+                _needs_rerun = True
+            elif row_validated != was_validated:
+                labeling_df.at[idx, "Validated"] = row_validated
+
+    if _needs_rerun:
+        st.session_state["labeling_data"] = labeling_df
+        if "labeling_editor" in st.session_state:
+            del st.session_state["labeling_editor"]
+        st.rerun()
+
     if validate_all:
+        for idx in labeling_df.index:
+            corrected_val = labeling_df.at[idx, "CORRECTED_PURPOSE_SUBCAT"]
+            if pd.isna(corrected_val) or corrected_val == "" or corrected_val is None:
+                labeling_df.at[idx, "CORRECTED_PURPOSE_SUBCAT"] = labeling_df.at[idx, "PURPOSE_SUBCAT"]
         labeling_df["Validated"] = True
         st.session_state["labeling_data"] = labeling_df
         st.session_state["labeling_step"] = 2
