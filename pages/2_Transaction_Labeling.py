@@ -320,7 +320,7 @@ if labeling_df is not None and not labeling_df.empty:
 
     # Calculate dynamic height (approx 35px per row + 38px for header)
     num_rows = len(labeling_df)
-    dynamic_height = min(600, 38 + max(1, num_rows) * 35)
+    dynamic_height = 38 + max(1, num_rows) * 35
 
     edited = st.data_editor(
         labeling_df[visible],
