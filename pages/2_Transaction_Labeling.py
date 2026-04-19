@@ -17,7 +17,7 @@ from utils.db import (
     save_trn_validations,
 )
 from utils.mock_data import get_trn_classified, get_trn_validations
-from utils.styles import page_header, section_header
+from utils.styles import inject_custom_css, page_header, section_header
 
 _DEFAULT_COLUMNS = [
     "SRC_IBAN",
@@ -128,6 +128,7 @@ DB_MODE = is_db_configured()
 subcats = get_grouped_subcats()
 all_subcats_with_extra = subcats + ["not_determinable"]
 
+inject_custom_css()
 page_header("Transaction Labeling", "Review and validate classified transactions")
 
 # -- Step indicator --
@@ -320,7 +321,7 @@ if labeling_df is not None and not labeling_df.empty:
 
     # Calculate dynamic height (approx 35px per row + 38px for header)
     num_rows = len(labeling_df)
-    dynamic_height = 38 + max(1, num_rows) * 35
+    dynamic_height = min(600, 38 + max(1, num_rows) * 35)
 
     edited = st.data_editor(
         labeling_df[visible],

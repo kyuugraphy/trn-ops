@@ -58,6 +58,21 @@ def inject_custom_css():
             margin-bottom: 1.5rem;
         }
 
+        /* ---- Reduce main block padding for wider tables ---- */
+        .block-container {
+            padding-left: 1rem;
+            padding-right: 1rem;
+            max-width: 100%;
+        }
+
+        /* ---- Let data editor scroll horizontally without squashing columns ---- */
+        div[data-testid="stDataFrame"] > div {
+            overflow-x: auto;
+        }
+        div[data-testid="stDataFrame"] table {
+            min-width: max-content;
+        }
+
         /* ---- Hide Streamlit branding ---- */
         #MainMenu {visibility: hidden;}
         footer {visibility: hidden;}
