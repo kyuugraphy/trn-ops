@@ -13,7 +13,7 @@ from utils.categories import (
     get_grouped_subcats,
     get_subcat_descriptions,
 )
-from utils.db import fetch_manual_acc_data, is_db_configured, save_manual_acc_record
+from utils.db import fetch_manual_acc_data, is_db_configured, render_connection_debug, save_manual_acc_record
 from utils.mock_data import get_manual_acc_data
 from utils.styles import page_header, section_header
 from utils.validators import validate_iban, validate_ico, validate_rc
@@ -79,6 +79,8 @@ subcats = get_grouped_subcats()
 descs = get_subcat_descriptions()
 
 page_header("Manual Accounts", "Search, create, and edit manual account data entries")
+
+render_connection_debug(["manual_acc"])
 
 # Metrics
 with st.container(border=True):

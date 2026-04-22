@@ -14,6 +14,7 @@ from utils.db import (
     fetch_trn_for_labeling,
     fetch_trn_validations as fetch_trn_validations_db,
     is_db_configured,
+    render_connection_debug,
     save_trn_validations,
 )
 from utils.mock_data import get_trn_classified, get_trn_validations
@@ -114,13 +115,35 @@ def _filter_by_validation_date(df: pd.DataFrame, last_validated_date: date | Non
     return df[mask_never | mask_before]
 
 
-def _filter_uncertain(df: pd.DataFrame, show_uncertain: bool) -> pd.DataFrame:
-    """When uncertain toggle is ON, keep only rows whose last validation was
-    'uncertain' (i.e. last validated PURPOSE_SUBCAT contains 'unclassified').
+def _filter_uncertain(
+    df: pd.DataFrame,
+    show_uncertain: bool,
+    last_validated_date: date | None = None,
+) -> pd.DataFrame:
+    """When uncertain toggle is ON, keep only rows whose PURPOSE_SUBCAT is
+    None/empty, 'unclassified_general', or 'not_determinable'.
+
+    If the transaction has a prior validation within the *last_validated_date*
+    window, the validated PURPOSE_SUBCAT takes precedence over the original.
     """
     if not show_uncertain:
         return df
-    return df[df["LAST_PURPOSE_SUBCAT"].str.contains("unclassified", case=False, na=False) | df["LAST_PURPOSE_SUBCAT"].eq("")]
+
+    _UNCERTAIN_VALUES = {"unclassified_general", "not_determinable"}
+
+    has_relevant_validation = df["LAST_PURPOSE_SUBCAT"].ne("") & df["LAST_PURPOSE_SUBCAT"].notna()
+    if last_validated_date is not None:
+        has_relevant_validation = has_relevant_validation & (
+            pd.to_datetime(df["LAST_VALIDATED"]).dt.date <= last_validated_date
+        )
+
+    effective_purpose = df["PURPOSE_SUBCAT"].copy()
+    effective_purpose[has_relevant_validation] = df.loc[has_relevant_validation, "LAST_PURPOSE_SUBCAT"]
+
+    is_null = effective_purpose.isna() | effective_purpose.eq("")
+    is_uncertain = effective_purpose.isin(_UNCERTAIN_VALUES)
+
+    return df[is_null | is_uncertain]
 
 
 # Re-evaluate each run so env changes after initial import are picked up.
@@ -130,6 +153,8 @@ all_subcats_with_extra = subcats + ["not_determinable"]
 
 inject_custom_css()
 page_header("Transaction Labeling", "Review and validate classified transactions")
+
+render_connection_debug(["trn_classified", "trn_validation"])
 
 # -- Step indicator --
 current_step = st.session_state.get("labeling_step", 0)
@@ -210,7 +235,7 @@ with st.expander("Filters", expanded=loaded_df is None, icon=":material/filter_a
         "Show Uncertain Only",
         value=False,
         key="lbl_uncertain",
-        help="Show only transactions whose last validation was uncertain (unclassified).",
+        help="Show only transactions whose PURPOSE_SUBCAT is null, unclassified_general, or not_determinable (considers last validation when available).",
     )
 
     section_header("Display Options")
@@ -264,7 +289,7 @@ if load_clicked:
         filtered = _apply_filters(raw, filters)
         joined = _join_with_validations(filtered, get_trn_validations())
         joined = _filter_by_validation_date(joined, last_val_date)
-        joined = _filter_uncertain(joined, uncertain)
+        joined = _filter_uncertain(joined, uncertain, last_val_date)
 
     joined["Validated"] = False
     joined["CORRECTED_PURPOSE_SUBCAT"] = pd.Series([None] * len(joined), dtype="object")

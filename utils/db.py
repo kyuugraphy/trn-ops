@@ -80,6 +80,41 @@ def is_db_configured() -> bool:
     return all(v for v in params.values())
 
 
+def render_connection_debug(table_keys: list[str]) -> None:
+    """Render a debug expander showing connection status, table config, and a test query."""
+    import os as _os
+
+    db_ok = is_db_configured()
+    params = _get_connection_params()
+
+    with st.expander("Connection & Table Debug", expanded=True):
+        st.subheader("Connection")
+        for env_key in ("DATABRICKS_HOST", "DATABRICKS_TOKEN", "DATABRICKS_HTTP_PATH"):
+            _set = bool(str(_os.getenv(env_key, "")).strip())
+            st.markdown(f"- `{env_key}`: **{'set' if _set else 'missing'}**")
+        st.markdown(f"- `secrets.toml` found: **{_streamlit_secrets_file_exists()}**")
+        st.markdown(f"- **`is_db_configured()`**: `{db_ok}`")
+        if params["server_hostname"]:
+            st.markdown(f"- Host: `{params['server_hostname']}`")
+
+        st.subheader("Tables")
+        for key in table_keys:
+            st.markdown(f"- **{key}**: `{get_table(key)}`")
+
+        st.subheader("Test Query")
+        if not db_ok:
+            st.warning("DB not configured — skipping test query (using mock data).")
+        else:
+            test_table = get_table(table_keys[0])
+            test_sql = f"SELECT COUNT(*) AS cnt FROM {test_table}"
+            try:
+                result = _read(test_sql)
+                cnt = result["cnt"].iloc[0]
+                st.success(f"`{test_table}` — **{cnt}** rows")
+            except Exception as exc:
+                st.error(f"Query failed on `{test_table}`:\n```\n{exc}\n```")
+
+
 @contextmanager
 def _cursor():
     """Yield a Databricks SQL cursor, closing connection on exit."""
@@ -251,9 +286,12 @@ def fetch_trn_for_labeling(
 
     if uncertain_only:
         conditions.append(
-            "(v.LAST_PURPOSE_SUBCAT LIKE '%%unclassified%%' "
-            "OR v.LAST_PURPOSE_SUBCAT IS NULL "
-            "OR v.LAST_PURPOSE_SUBCAT = '')"
+            "("
+            "COALESCE(v.LAST_PURPOSE_SUBCAT, t.PURPOSE_SUBCAT) IS NULL "
+            "OR COALESCE(v.LAST_PURPOSE_SUBCAT, t.PURPOSE_SUBCAT) = '' "
+            "OR COALESCE(v.LAST_PURPOSE_SUBCAT, t.PURPOSE_SUBCAT) "
+            "   IN ('unclassified_general', 'not_determinable')"
+            ")"
         )
 
     params["num_rows"] = num_rows
