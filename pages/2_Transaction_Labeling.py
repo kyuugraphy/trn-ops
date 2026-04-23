@@ -355,11 +355,23 @@ if labeling_df is not None and not labeling_df.empty:
     visible = visible + [c for c in editable_cols if c not in visible]
     visible = list(dict.fromkeys(visible))
 
+    # Extend selectbox options with any values present in the loaded data so
+    # values from the DB that aren't in categories.json (e.g. legacy or custom
+    # subcategories) are still renderable by the SelectboxColumn.
+    _observed = set()
+    for _col in ("PURPOSE_SUBCAT", "LAST_PURPOSE_SUBCAT", "CORRECTED_PURPOSE_SUBCAT"):
+        if _col in labeling_df.columns:
+            _observed.update(
+                str(v) for v in labeling_df[_col].dropna().unique() if str(v).strip()
+            )
+    _extra_opts = sorted(_observed - set(all_subcats_with_extra))
+    purpose_options = all_subcats_with_extra + _extra_opts
+
     column_config = {
         "Validated": st.column_config.CheckboxColumn("Validated", default=False),
         "CORRECTED_PURPOSE_SUBCAT": st.column_config.SelectboxColumn(
             "Corrected Purpose",
-            options=all_subcats_with_extra,
+            options=purpose_options,
             required=False,
         ),
         "NOTE": st.column_config.TextColumn("Note", max_chars=500),
@@ -391,6 +403,16 @@ if labeling_df is not None and not labeling_df.empty:
     # -----------------------------------------------------------
     # Auto-fill CORRECTED_PURPOSE_SUBCAT when Validated is ticked
     # -----------------------------------------------------------
+    def _pick_default_purpose(row: pd.Series) -> str | None:
+        """Prefer the last validated purpose, fall back to the classified one."""
+        for col in ("LAST_PURPOSE_SUBCAT", "PURPOSE_SUBCAT"):
+            if col not in row.index:
+                continue
+            val = row[col]
+            if pd.notna(val) and str(val).strip():
+                return str(val)
+        return None
+
     _needs_rerun = False
     if edited is not None:
         for idx in edited.index:
@@ -400,7 +422,8 @@ if labeling_df is not None and not labeling_df.empty:
             corrected_empty = (pd.isna(corrected_val) or corrected_val == "" or corrected_val is None)
 
             if row_validated and not was_validated and corrected_empty:
-                labeling_df.at[idx, "CORRECTED_PURPOSE_SUBCAT"] = labeling_df.at[idx, "PURPOSE_SUBCAT"]
+                default_purpose = _pick_default_purpose(labeling_df.loc[idx])
+                labeling_df.at[idx, "CORRECTED_PURPOSE_SUBCAT"] = default_purpose
                 labeling_df.at[idx, "Validated"] = True
                 _needs_rerun = True
             elif row_validated != was_validated:
@@ -416,7 +439,9 @@ if labeling_df is not None and not labeling_df.empty:
         for idx in labeling_df.index:
             corrected_val = labeling_df.at[idx, "CORRECTED_PURPOSE_SUBCAT"]
             if pd.isna(corrected_val) or corrected_val == "" or corrected_val is None:
-                labeling_df.at[idx, "CORRECTED_PURPOSE_SUBCAT"] = labeling_df.at[idx, "PURPOSE_SUBCAT"]
+                labeling_df.at[idx, "CORRECTED_PURPOSE_SUBCAT"] = _pick_default_purpose(
+                    labeling_df.loc[idx]
+                )
         labeling_df["Validated"] = True
         st.session_state["labeling_data"] = labeling_df
         st.session_state["labeling_step"] = 2
