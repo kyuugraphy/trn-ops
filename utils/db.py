@@ -23,9 +23,9 @@ _DEFAULT_CATALOG = os.getenv("DATABRICKS_CATALOG", "kyuu_demo")
 _DEFAULT_SCHEMA = os.getenv("DATABRICKS_SCHEMA", "trn_test")
 
 TABLE_DEFAULTS = {
-    "manual_acc": f"{_DEFAULT_CATALOG}.{_DEFAULT_SCHEMA}.MANUAL_ACC_DATA_CHANGES",
-    "trn_classified": f"{_DEFAULT_CATALOG}.{_DEFAULT_SCHEMA}.TRN_CLASSIFIED_12M",
-    "trn_validation": f"{_DEFAULT_CATALOG}.{_DEFAULT_SCHEMA}.TRN_VALIDATION",
+    "manual_acc": f"{_DEFAULT_CATALOG}.{_DEFAULT_SCHEMA}.manual_acc_data_changes_new",
+    "trn_classified": f"{_DEFAULT_CATALOG}.{_DEFAULT_SCHEMA}.trn_classified_12m_new",
+    "trn_validation": f"{_DEFAULT_CATALOG}.{_DEFAULT_SCHEMA}.trn_validation",
 }
 
 
