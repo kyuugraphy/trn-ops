@@ -359,9 +359,28 @@ if labeling_df is not None and not labeling_df.empty:
         )
 
     editable_cols = ["Validated", "CORRECTED_PURPOSE_SUBCAT", "NOTE"]
-    visible = ["ACC_TRN_KEY"] + [c for c in selected_columns if c in labeling_df.columns]
-    visible = visible + [c for c in editable_cols if c not in visible]
-    visible = list(dict.fromkeys(visible))
+
+    # Preferred left-to-right column order. Any columns selected by the user
+    # that aren't explicitly listed here are appended afterwards in their
+    # original selection order.
+    _PRIORITY_ORDER = [
+        "ACC_TRN_KEY",
+        "TRN_MSG",
+        "PURPOSE_SUBCAT",
+        "LAST_VALIDATED",
+        "LAST_VALIDATED_BY",
+        "LAST_PURPOSE_SUBCAT",
+        "Validated",
+        "CORRECTED_PURPOSE_SUBCAT",
+        "NOTE",
+    ]
+
+    candidate_cols = ["ACC_TRN_KEY"] + list(selected_columns) + editable_cols
+    candidate_cols = [c for c in candidate_cols if c in labeling_df.columns or c in editable_cols]
+
+    ordered = [c for c in _PRIORITY_ORDER if c in candidate_cols]
+    ordered += [c for c in candidate_cols if c not in ordered]
+    visible = list(dict.fromkeys(ordered))
 
     # Extend selectbox options with any values present in the loaded data so
     # values from the DB that aren't in categories.json (e.g. legacy or custom
