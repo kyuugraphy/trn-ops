@@ -30,6 +30,7 @@ _DEFAULT_COLUMNS = [
     "TRN_MSG",
     "PARTY_SUBCAT",
     "PURPOSE_SUBCAT",
+    "LAST_VALIDATED",
 ]
 
 _ALL_DISPLAY_COLUMNS = [
@@ -48,6 +49,8 @@ _ALL_DISPLAY_COLUMNS = [
     "PARTY_SUBCAT",
     "PURPOSE_SUBCAT",
     "PURPOSE_CAT",
+    "LAST_VALIDATED",
+    "LAST_PURPOSE_SUBCAT",
 ]
 
 
@@ -340,6 +343,8 @@ if labeling_df is not None and not labeling_df.empty:
         "TRN_AMT_LCCY": st.column_config.NumberColumn("Amount (CZK)", format="%.2f"),
         "SNAP_DATE": st.column_config.DateColumn("Snap Date"),
         "ACC_TRN_KEY": st.column_config.NumberColumn("TRN Key", disabled=True),
+        "LAST_VALIDATED": st.column_config.DatetimeColumn("Last Validated", disabled=True),
+        "LAST_PURPOSE_SUBCAT": st.column_config.TextColumn("Last Val. Purpose", disabled=True),
     }
 
     disabled_cols = [c for c in visible if c not in editable_cols]
