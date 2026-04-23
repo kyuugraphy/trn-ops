@@ -263,6 +263,7 @@ with st.expander("Filters", expanded=loaded_df is None, icon=":material/filter_a
 # LOAD DATA
 # ================================================================
 if load_clicked:
+    st.session_state.pop("load_error", None)
     if DB_MODE:
         try:
             joined = fetch_trn_for_labeling(
@@ -281,8 +282,8 @@ if load_clicked:
                 num_rows=num_rows,
             )
         except Exception as exc:
-            st.error(f"Failed to load transactions:\n```\n{exc}\n```")
-            st.stop()
+            st.session_state["load_error"] = str(exc)
+            joined = pd.DataFrame()
     else:
         filters = {
             "pay_tp": pay_tp,
@@ -314,6 +315,9 @@ if load_clicked:
 # ================================================================
 # REVIEW TABLE
 # ================================================================
+if st.session_state.get("load_error"):
+    st.error(f"Failed to load transactions:\n```\n{st.session_state['load_error']}\n```")
+
 labeling_df = st.session_state.get("labeling_data")
 
 if labeling_df is not None and not labeling_df.empty:

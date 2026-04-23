@@ -100,18 +100,42 @@ def render_connection_debug(table_keys: list[str]) -> None:
         for key in table_keys:
             st.markdown(f"- **{key}**: `{get_table(key)}`")
 
-        st.subheader("Test Query")
+        st.subheader("Test Queries")
         if not db_ok:
             st.warning("DB not configured — skipping test query (using mock data).")
         else:
-            test_table = get_table(table_keys[0])
-            test_sql = f"SELECT COUNT(*) AS cnt FROM {test_table}"
+            for key in table_keys:
+                tbl = get_table(key)
+                try:
+                    result = _read(f"SELECT COUNT(*) AS cnt FROM {tbl}")
+                    cnt = result["cnt"].iloc[0]
+                    st.success(f"`{tbl}` — **{cnt}** rows")
+                except Exception as exc:
+                    st.error(f"Query failed on `{tbl}`:\n```\n{exc}\n```")
+
+            trn_tbl = get_table("trn_classified")
             try:
-                result = _read(test_sql)
-                cnt = result["cnt"].iloc[0]
-                st.success(f"`{test_table}` — **{cnt}** rows")
+                date_range = _read(
+                    f"SELECT MIN(SNAP_DATE) AS min_dt, MAX(SNAP_DATE) AS max_dt FROM {trn_tbl}"
+                )
+                st.info(
+                    f"SNAP_DATE range: **{date_range['min_dt'].iloc[0]}** → "
+                    f"**{date_range['max_dt'].iloc[0]}**"
+                )
             except Exception as exc:
-                st.error(f"Query failed on `{test_table}`:\n```\n{exc}\n```")
+                st.warning(f"Could not read SNAP_DATE range: {exc}")
+
+            val_tbl = get_table("trn_validation")
+            trn_tbl = get_table("trn_classified")
+            try:
+                test_join = _read(
+                    f"SELECT t.ACC_TRN_KEY FROM {trn_tbl} t "
+                    f"LEFT JOIN {val_tbl} v ON t.ACC_TRN_KEY = v.ACC_TRN_KEY "
+                    f"LIMIT 5"
+                )
+                st.success(f"JOIN test OK — returned **{len(test_join)}** rows")
+            except Exception as exc:
+                st.error(f"JOIN test failed:\n```\n{exc}\n```")
 
 
 @contextmanager
