@@ -79,6 +79,30 @@ def is_db_configured() -> bool:
     return all(v for v in params.values())
 
 
+def get_current_user() -> str:
+    """Resolve the authenticated user's email from Databricks Apps headers.
+
+    Databricks Apps forward the authenticated identity via request headers.
+    We check the common variants in priority order and fall back to a local
+    username so the app is usable during development.
+    """
+    try:
+        headers = st.context.headers  # type: ignore[attr-defined]
+    except Exception:
+        headers = {}
+
+    for key in (
+        "X-Forwarded-Email",
+        "X-Forwarded-Preferred-Username",
+        "X-Forwarded-User",
+    ):
+        val = headers.get(key) if headers else None
+        if val:
+            return str(val).strip()
+
+    return os.getenv("USER") or os.getenv("USERNAME") or "local-dev"
+
+
 def render_connection_debug(table_keys: list[str]) -> None:
     """Render a debug expander showing connection status, table config, and a test query."""
     import os as _os

@@ -13,6 +13,7 @@ from utils.categories import get_grouped_subcats
 from utils.db import (
     fetch_trn_for_labeling,
     fetch_trn_validations as fetch_trn_validations_db,
+    get_current_user,
     is_db_configured,
     render_connection_debug,
     save_trn_validations,
@@ -264,7 +265,14 @@ with st.expander("Filters", expanded=loaded_df is None, icon=":material/filter_a
         default=_DEFAULT_COLUMNS,
         key="lbl_columns",
     )
-    user_name = do2.text_input("Your Name", value="analyst", key="lbl_user", placeholder="User name for validation")
+    current_user = get_current_user()
+    do2.text_input(
+        "Signed in as",
+        value=current_user,
+        disabled=True,
+        key="lbl_user_display",
+        help="Authenticated Databricks user. Used to attribute saved validations.",
+    )
 
     st.markdown("<br>", unsafe_allow_html=True)
     load_clicked = st.button("Load Transactions", type="primary", key="btn_query", use_container_width=True)
@@ -469,7 +477,7 @@ if labeling_df is not None and not labeling_df.empty:
                 color="warning",
             )
         else:
-            user = st.session_state.get("lbl_user", "analyst") or "analyst"
+            user = get_current_user()
             now = datetime.now()
 
             new_validations = []
