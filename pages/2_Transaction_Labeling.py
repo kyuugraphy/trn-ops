@@ -31,6 +31,8 @@ _DEFAULT_COLUMNS = [
     "PARTY_SUBCAT",
     "PURPOSE_SUBCAT",
     "LAST_VALIDATED",
+    "LAST_VALIDATED_BY",
+    "LAST_PURPOSE_SUBCAT",
 ]
 
 _ALL_DISPLAY_COLUMNS = [
@@ -50,6 +52,7 @@ _ALL_DISPLAY_COLUMNS = [
     "PURPOSE_SUBCAT",
     "PURPOSE_CAT",
     "LAST_VALIDATED",
+    "LAST_VALIDATED_BY",
     "LAST_PURPOSE_SUBCAT",
 ]
 
@@ -91,6 +94,7 @@ def _join_with_validations(trn_df: pd.DataFrame, val_df: pd.DataFrame) -> pd.Dat
     """Join transactions with their latest validation record."""
     if val_df.empty:
         trn_df["LAST_VALIDATED"] = pd.NaT
+        trn_df["LAST_VALIDATED_BY"] = ""
         trn_df["LAST_PURPOSE_SUBCAT"] = ""
         return trn_df
 
@@ -98,12 +102,13 @@ def _join_with_validations(trn_df: pd.DataFrame, val_df: pd.DataFrame) -> pd.Dat
         val_df.sort_values("VALIDATION_TIME_STAMP")
         .groupby("ACC_TRN_KEY")
         .last()
-        .reset_index()[["ACC_TRN_KEY", "VALIDATION_TIME_STAMP", "PURPOSE_SUBCAT"]]
+        .reset_index()[["ACC_TRN_KEY", "VALIDATION_TIME_STAMP", "USER", "PURPOSE_SUBCAT"]]
     )
-    latest.columns = ["ACC_TRN_KEY", "LAST_VALIDATED", "LAST_PURPOSE_SUBCAT"]
+    latest.columns = ["ACC_TRN_KEY", "LAST_VALIDATED", "LAST_VALIDATED_BY", "LAST_PURPOSE_SUBCAT"]
 
     merged = trn_df.merge(latest, on="ACC_TRN_KEY", how="left")
     merged["LAST_VALIDATED"] = merged["LAST_VALIDATED"].where(merged["LAST_VALIDATED"].notna(), other=pd.NaT)
+    merged["LAST_VALIDATED_BY"] = merged["LAST_VALIDATED_BY"].fillna("")
     merged["LAST_PURPOSE_SUBCAT"] = merged["LAST_PURPOSE_SUBCAT"].fillna("")
     return merged
 
@@ -259,21 +264,25 @@ with st.expander("Filters", expanded=loaded_df is None, icon=":material/filter_a
 # ================================================================
 if load_clicked:
     if DB_MODE:
-        joined = fetch_trn_for_labeling(
-            pay_tp=pay_tp,
-            src_iban=src_iban,
-            src_ico=src_ico,
-            src_rc=src_rc,
-            dest_iban=dest_iban,
-            dest_ico=dest_ico,
-            dest_rc=dest_rc,
-            purpose_subcat=purpose_filter,
-            date_from=date_from,
-            date_to=date_to,
-            last_val_date=last_val_date,
-            uncertain_only=uncertain,
-            num_rows=num_rows,
-        )
+        try:
+            joined = fetch_trn_for_labeling(
+                pay_tp=pay_tp,
+                src_iban=src_iban,
+                src_ico=src_ico,
+                src_rc=src_rc,
+                dest_iban=dest_iban,
+                dest_ico=dest_ico,
+                dest_rc=dest_rc,
+                purpose_subcat=purpose_filter,
+                date_from=date_from,
+                date_to=date_to,
+                last_val_date=last_val_date,
+                uncertain_only=uncertain,
+                num_rows=num_rows,
+            )
+        except Exception as exc:
+            st.error(f"Failed to load transactions:\n```\n{exc}\n```")
+            st.stop()
     else:
         filters = {
             "pay_tp": pay_tp,
@@ -344,6 +353,7 @@ if labeling_df is not None and not labeling_df.empty:
         "SNAP_DATE": st.column_config.DateColumn("Snap Date"),
         "ACC_TRN_KEY": st.column_config.NumberColumn("TRN Key", disabled=True),
         "LAST_VALIDATED": st.column_config.DatetimeColumn("Last Validated", disabled=True),
+        "LAST_VALIDATED_BY": st.column_config.TextColumn("Validated By", disabled=True),
         "LAST_PURPOSE_SUBCAT": st.column_config.TextColumn("Last Val. Purpose", disabled=True),
     }
 

@@ -270,18 +270,18 @@ def fetch_trn_for_labeling(
         params["purpose_subcat"] = purpose_subcat
 
     if date_from:
-        conditions.append("t.SNAP_DATE >= %(date_from)s")
-        params["date_from"] = date_from
+        conditions.append("CAST(t.SNAP_DATE AS DATE) >= %(date_from)s")
+        params["date_from"] = str(date_from)
     if date_to:
-        conditions.append("t.SNAP_DATE <= %(date_to)s")
-        params["date_to"] = date_to
+        conditions.append("CAST(t.SNAP_DATE AS DATE) <= %(date_to)s")
+        params["date_to"] = str(date_to)
 
     if last_val_date:
         conditions.append(
             "(v.LAST_VALIDATED IS NULL "
             "OR CAST(v.LAST_VALIDATED AS DATE) <= %(last_val_date)s)"
         )
-        params["last_val_date"] = last_val_date
+        params["last_val_date"] = str(last_val_date)
 
     if uncertain_only:
         conditions.append(
@@ -295,20 +295,25 @@ def fetch_trn_for_labeling(
 
     params["num_rows"] = num_rows
 
+    val_table = get_table('trn_validation')
+    trn_table = get_table('trn_classified')
+
     sql = f"""
         WITH latest_validations AS (
             SELECT
                 ACC_TRN_KEY,
                 MAX(VALIDATION_TIME_STAMP)                       AS LAST_VALIDATED,
+                MAX_BY(`USER`, VALIDATION_TIME_STAMP)            AS LAST_VALIDATED_BY,
                 MAX_BY(PURPOSE_SUBCAT, VALIDATION_TIME_STAMP)    AS LAST_PURPOSE_SUBCAT
-            FROM {get_table('trn_validation')}
+            FROM {val_table}
             GROUP BY ACC_TRN_KEY
         )
         SELECT
             t.*,
             v.LAST_VALIDATED,
-            COALESCE(v.LAST_PURPOSE_SUBCAT, '') AS LAST_PURPOSE_SUBCAT
-        FROM {get_table('trn_classified')} t
+            COALESCE(v.LAST_VALIDATED_BY, '')    AS LAST_VALIDATED_BY,
+            COALESCE(v.LAST_PURPOSE_SUBCAT, '')  AS LAST_PURPOSE_SUBCAT
+        FROM {trn_table} t
         LEFT JOIN latest_validations v ON t.ACC_TRN_KEY = v.ACC_TRN_KEY
         WHERE {' AND '.join(conditions)}
         ORDER BY RAND()
