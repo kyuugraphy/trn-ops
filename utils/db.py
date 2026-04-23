@@ -24,7 +24,7 @@ _DEFAULT_SCHEMA = os.getenv("DATABRICKS_SCHEMA", "trn_test")
 
 TABLE_DEFAULTS = {
     "manual_acc": f"{_DEFAULT_CATALOG}.{_DEFAULT_SCHEMA}.manual_acc_data_changes_new",
-    "trn_classified": f"{_DEFAULT_CATALOG}.{_DEFAULT_SCHEMA}.trn_classified_12m_new",
+    "trn_classified": f"{_DEFAULT_CATALOG}.{_DEFAULT_SCHEMA}.trn_classified_12m_upd",
     "trn_validation": f"{_DEFAULT_CATALOG}.{_DEFAULT_SCHEMA}.trn_validation",
 }
 
