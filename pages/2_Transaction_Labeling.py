@@ -228,8 +228,18 @@ with st.expander("Filters", expanded=loaded_df is None, icon=":material/filter_a
         options=["All"] + subcats,
         key="lbl_purpose_filter",
     )
-    date_from = tf3.date_input("Date From", value=date(2025, 1, 1), key="lbl_date_from")
-    date_to = tf4.date_input("Date To", value=date(2026, 12, 31), key="lbl_date_to")
+    date_from = tf3.date_input(
+        "Date From",
+        value=None,
+        key="lbl_date_from",
+        help="Leave empty for no lower bound.",
+    )
+    date_to = tf4.date_input(
+        "Date To",
+        value=None,
+        key="lbl_date_to",
+        help="Leave empty for no upper bound.",
+    )
 
     tf5, tf6, tf7 = st.columns(3)
     num_rows = tf5.slider("Number of Rows", min_value=10, max_value=500, value=50, step=10, key="lbl_num_rows")
