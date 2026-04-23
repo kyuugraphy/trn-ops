@@ -405,7 +405,9 @@ if labeling_df is not None and not labeling_df.empty:
         "TRN_AMT_LCCY": st.column_config.NumberColumn("Amount (CZK)", format="%.2f"),
         "SNAP_DATE": st.column_config.DateColumn("Snap Date"),
         "ACC_TRN_KEY": st.column_config.NumberColumn("TRN Key", disabled=True),
-        "LAST_VALIDATED": st.column_config.DatetimeColumn("Last Validated", disabled=True),
+        "LAST_VALIDATED": st.column_config.DateColumn(
+            "Last Validated", format="YYYY-MM-DD", disabled=True
+        ),
         "LAST_VALIDATED_BY": st.column_config.TextColumn("Validated By", disabled=True),
         "LAST_PURPOSE_SUBCAT": st.column_config.TextColumn("Last Val. Purpose", disabled=True),
     }
